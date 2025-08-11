@@ -1,0 +1,6 @@
+**/__pycache__/
+.venv/
+blabbering.txt
+redis_socket
+270/
+362/
