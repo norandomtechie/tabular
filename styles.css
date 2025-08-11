@@ -1,0 +1,1055 @@
+/* latin */
+@font-face {
+    font-family: Heebo;
+    font-style: normal;
+    font-weight: 200;
+    font-display: swap;
+    src: url("heebo.ttf") format('truetype');
+}
+nav {
+    width: 95%;
+    height: 5vh;
+    margin-top: 15px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+nav > div {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+#roomstatus {
+    font-size: 20px;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 10px;
+}
+
+#closeroom {
+    border-color: orange;
+}
+
+#time {
+    font-size: 56px;
+    margin: 0;
+}
+
+#navside1,
+#navside2 {
+    width: 30%;
+}
+
+#navcenter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+#navcenter p {
+    margin: 0;
+}
+
+#navside2, #slider {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+}
+#slider {
+    z-index: 2; 
+    margin-right: 5%;
+}
+
+#navside2>a {
+    text-decoration: none;
+    color: inherit;
+}
+
+#navside2>a>div {
+    width: 150px;
+}
+
+#navside2>a>div>div {
+    width: 18px;
+}
+
+.switchCylinder {
+    width: 50px;
+    height: 25px;
+    border: 1px solid var(--softer-btn-border);
+    background-color: var(--themeswitch-bg-color);
+    border-radius: 25px;
+    transition: background-color 0.2s;
+}
+
+.switchCircle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    top: -5px;
+    left: var(--switch-position);
+    width: 35px;
+    height: 35px;
+    border: 1px solid var(--softer-btn-border);
+    background-color: var(--bg-color);
+    border-radius: 100%;
+    transition: all 0.2s;
+}
+#themeSwitchCircle:before {
+    content: var(--switch-icon);
+    color: var(--text-color);
+}
+
+#utilSwitchCircle {
+    left: var(--util-switch-position);
+}
+#utilSwitchCircle:before {
+    content: var(--util-switch-icon);
+    color: var(--text-color);
+}
+
+#anyStudentSwitchCircle {
+    left: var(--anystudent-switch-position);
+}
+#anyStudentSwitchCircle:before {
+    content: var(--anystudent-switch-icon);
+    color: var(--text-color);
+}
+
+#roomDisabledSwitchCircle {
+    left: var(--roomdisabled-switch-position);
+}
+#roomDisabledSwitchCircle:before {
+    content: var(--roomdisabled-switch-icon);
+    color: var(--text-color);
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+#adddetails input,
+#navside2 button,
+label {
+    font-family: 'Heebo';
+    color: var(--text-color);
+}
+a {
+    color: var(--boiler-up-text);
+}
+a:visited {
+    color: var(--boiler-up-text-dark);
+}
+
+html {
+    width: 100vw;
+    height: 100vh;
+}
+body {
+    margin: 0;
+    height: inherit;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-color);
+    transition: opacity 0.1s;
+}
+@keyframes fadein {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+@keyframes flashing {
+    0%, 100% {
+        border-color: var(--header-color);
+    }
+    50% {
+        border-color: transparent;
+    }
+}
+.waiter.flashing {
+    border-width: calc(10px + 1px);
+    width: calc(300px - 20px);
+    height: calc(240px - 20px);
+    animation: flashing 1s infinite;
+}
+.roomtop {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    width: 90%;
+}
+.roomtitle, .roomsubtitle {
+    font-size: 36px;
+    font-family: 'Heebo';
+    margin: 25px 0 12px 0;
+    text-decoration: underline;
+}
+.roomtitle {
+    margin-bottom: 0;
+}
+.roomsubtitle {
+	font-size: 26px;
+	margin-top: 0;
+	font-style: italic;
+	opacity: 0.5;
+	width: 100%;
+	cursor: pointer;
+}
+.roomsubtitle.textadded {
+    opacity: 1;
+    font-style: normal;
+    text-decoration-line: none;
+}
+.queuetitle {
+    font-size: 30px;
+    font-family: 'Heebo';
+    margin: 12px 0 12px 0;
+    cursor: pointer;
+}
+.waiter {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 300px;
+    height: 240px;
+    border: 1px solid rgba(100, 100, 100, 0.5);
+    margin: 5px 10px;
+    background-color: var(--waiter-bg-0);
+    filter: sepia(0);
+    flex: 0 0 auto;
+    /* Firefox */
+    -moz-animation: fadein 0.5s;
+    /* Safari and Chrome */
+    -webkit-animation: fadein 0.5s;
+    /* Opera */
+    -o-animation: fadein 0.5s;
+}
+.waiter-add {
+    width: 100px;
+    height: 100px;
+    background-color: var(--flipped-btn-color);
+    transition: all 0.2s;
+    font-weight: lighter!important;
+}
+.is-self, .waiter-add {
+    border: 4px dotted var(--themeswitch-bg-color);
+}
+.is-self:hover, .waiter-add:hover {
+    cursor: pointer;
+    border: 4px solid var(--waiter-p-color);
+    transition: all 0.2s;
+}
+.is-self p, .waiter p {
+    color: var(--waiter-p-color);
+}
+.username_text, .data_text, .time_text, .section_text {
+    font-family: Heebo; 
+    font-weight: normal;
+    margin: 0;
+    font-size: 16px;
+    font-weight: bold;
+}
+.username_text {
+    font-size: 28px;
+    margin-top: 10px;
+}
+.data_text {
+    font-size: 22px;
+    text-align: center;
+}
+.queue {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    overflow-x: auto;
+    width: calc(100% - 1vw);
+    height: max-content;
+    padding: 1vh 1vw 1vh 1vw;
+    border-radius: 5px 0 5px 5px;
+    border: 1px solid var(--softer-btn-border);
+    transition: all 0.2s;
+}
+.container {
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 100%;
+    border-radius: 3px;
+    display: flex;
+    flex-grow: 1;
+    transition: all 0.2s;
+}
+#rooms {
+    display: var(--rooms-show);
+    justify-content: flex-start;
+}
+#timer {
+    display: var(--timer-show);
+}
+#innertimer {
+    width: 500px;
+    height: 500px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    position: absolute;
+}
+#innertimer-border {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transition: stroke-dasharray 1s;
+}
+.innertimer-border-active {
+    animation: dash 4s linear infinite;
+    stroke-dasharray: 50;
+    stroke-dashoffset: 100;
+}
+@keyframes dash {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+.configmain {
+    width: 100%; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center;
+}
+#timertext {
+    font-size: 100px;
+    font-weight: lighter;
+    margin: 0;
+    z-index: 3;
+}
+.row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 100%;
+}
+#stopstart, #resettimer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    height: 100px;
+    border: 1px solid var(--softer-btn-border);
+    color: var(--text-color);
+    border-radius: 100%;
+    background-color: var(--btn-color);
+    font-size: 40px;
+    cursor: pointer;
+    z-index: 3;
+}
+.view {
+    width: 95%;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+}
+#sectionmgmt textarea {
+    background-color: var(--bg-hover);
+    color: var(--text-color);
+    border: 1px solid var(--softer-btn-border);
+    font-size: large;
+    padding: 0.5em;
+    width: 100%;
+    height: 35vh;
+}
+.adminpanel {
+    flex-direction: column;
+    border: 1px solid var(--softer-btn-border);
+    padding: 5px;
+    margin: 15px;
+    height: 80vh;
+    justify-content: flex-start;
+    overflow-y: auto;
+}
+hr {
+    width: 95%;
+    margin: 20px 0 20px 0;
+}
+.config {
+    display: flex;
+    width: 95%;
+    height: 5vh;
+    margin-top: 1vh;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+.config_div {
+    display: flex; 
+    flex-grow: 1; 
+    justify-content: 
+    flex-end; 
+    height: 5vh;
+}
+.config p {
+    font-size: 20px;
+    margin: 0;
+    margin-right: 4px;
+}
+.config_btn {
+    width: 30%;
+    color: var(--text-color);
+    font-size: 18px;
+    margin: 4px;
+    height: 4vh;
+    border: 1px solid var(--softer-btn-border);
+    background-color: transparent;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.config_btn:hover {
+    background: var(--flipped-btn-color);
+    color: var(--flipped-text-color);
+}
+.config_selected {
+    background: var(--flipped-btn-color);
+    color: var(--flipped-text-color);
+}
+#attendance {
+    width: 100%;
+}
+#attendance * {
+    color: var(--text-color);
+    font-family: 'Heebo';
+    font-size: 20px;
+    text-align: center;
+}
+#attendance tbody {
+    max-height: 95%;
+}
+#attendance thead td {
+    background: var(--header-color);
+}
+#attendance tbody td {
+    border: 0;
+    border-bottom: 1px solid var(--softer-btn-border);
+    border-radius: 0;
+}
+.icon {
+    position: absolute;
+    background-color: var(--text-color);
+    border-radius: 100%;
+    width: calc(1vw + 1vh);
+    height: calc(1vw + 1vh);
+    top: 135px;
+}
+
+/* roomoverlay */
+.roomoverlay {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-color);
+}
+.roomoverlay .panel {
+    width: 50%;
+    height: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.roomoverlay .panel:first-child {
+    border-right: 1px solid var(--softer-btn-border);
+}
+.roomoverlay .panel label {
+    font-size: 22px;
+    color: var(--text-color);
+    margin: 10px;
+}
+.roomoverlay .panel input {
+    width: 60%;
+    height: 4vh;
+    margin: 10px;
+    border: 1px solid var(--softer-btn-border);
+    background-color: transparent;
+    color: var(--text-color);
+    font-size: 18px;
+    padding: 5px;
+    text-align: center;
+}
+.btn {
+    display: flex;
+    width: max-content;
+    height: 4vh;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5em; 
+    font-size: 22px; 
+    cursor: pointer; 
+    margin: 0 2% 0 2%;
+    border: 1px solid var(--softer-btn-border);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-size: 18px;
+    transition: background-color 0.2s;
+}
+.clearbtn {
+    margin: 0;
+    margin-right: -1vw;
+    padding: 0 8vw;
+    border-radius: 5px 5px 0 0;
+}
+.owner-buttons {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 100%;
+    height: 60px;
+}
+.owner-buttons.hide-if-not-owner {
+    display: none;
+}
+.waiterbtn {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    width: 80px;
+    height: 30px;
+    background-color: transparent;
+    border: 1px solid var(--waiter-p-color);
+    color: var(--waiter-p-color);
+    transition: all 0.2s;
+}
+.btn:not(.waiterbtn):hover, .roomoverlay .panel input[type="button"]:not(.waiterbtn):hover {
+    background: var(--boilermaker-gold-transparent);
+}
+.waiterbtn:hover {
+    filter: brightness(0.75);
+}
+.collapsible {
+    position: absolute;
+    top: 100%;
+    width: 30vw;
+    display: none;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-evenly;
+    flex-wrap: wrap;
+	background-color: var(--bg-color);
+    margin-top: -1px;
+	border: 1px solid transparent;
+	border-radius: 0 0 5px 5px;
+    padding: 0.75em;
+    z-index: 1;
+}
+.collapsible * {
+    display: none;
+}
+#gear, #help {
+	display: block;
+	font-size: 2em;
+	margin: -1px 0 0 35px;
+	padding: 5px 10px;
+	cursor: pointer;
+	border: 1px solid transparent;
+    transition: border 0.2s;
+}
+#help::before {
+    content: '';
+}
+#help.opened {
+    z-index: 5;
+    border: 1px solid var(--softer-btn-border);
+    content: '❌';
+}
+.collapsible.opened {
+    display: flex;
+    border: 1px solid var(--softer-btn-border);
+    background-color: var(--bg-hover);
+}
+#gear.opened {
+	border: 1px solid var(--softer-btn-border);
+	border-bottom: 1px solid var(--bg-hover);
+    background-color: var(--bg-hover);
+	z-index: 2;
+}
+.collapsible.opened *:not(.hide-if-not-owner) {
+    display: block!important;
+    height: max-content!important;
+    opacity: 1!important;
+    margin: 2vh 0!important;
+}
+.collapsible-in-overlay, .hide-if-not-owner {
+    display: none!important;
+    cursor: default!important;
+}
+#collapse {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    position:relative;
+}
+#roomstatus {
+    width: 90%;
+    text-align: center;
+    border-top: 1px solid var(--boilermaker-gold-transparent);
+    margin-bottom: 0.5em!important;
+    padding-top: 1em;
+}
+.roomoverlay .panel input[type="button"] {
+    height: 5vh;
+    transition: background-color 0.2s;
+}
+
+/* https://code-boxx.com/responsive-css-speech-bubbles/ */
+.row { flex-direction: row; }
+.col { flex-direction: column; }
+.helpdiv {
+    display: flex;
+}
+
+.tutorialoverlay {
+    position: fixed;
+    z-index: -1;
+    opacity: 0;
+    width: 90vw;
+    height: 90vh;
+    top: 2.5vh;
+    left: 4vw;
+    background-color: var(--bg-hover);
+    color: var(--text-color);
+    border: 1px solid var(--softer-btn-border);
+    padding: 1vh 1vw 1vh 1vw;
+    overflow-y: auto;
+    transition: all 0.2s;
+}
+.tutorialoverlay.opened {
+    z-index: 4;
+    opacity: 1;
+}
+.tutorialoverlay * {
+    font-size: x-large;
+    font-family: 'Heebo';
+}
+.center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+video {
+    border: 2px solid var(--softer-btn-border);
+    padding: 0.5em;
+    max-width: 75vw;
+}
+
+
+/* for mobile screens */
+@media only screen and (max-device-width: 600px) {
+    .waiterbtn {
+        width: 90px;
+        height: 45px;
+    }
+    .waiter-add {
+        width: 100px;
+        height: 100px;
+    }
+    .roomoverlay .panel input {
+        width: 90%;
+        font-size: 20px;
+        height: 6vh;
+    }
+    #createroomrow {
+        flex-direction: column;
+        margin-bottom: 25px;
+    }
+    .roomoverlay {
+        flex-direction: column;
+        margin-top: 20px;
+    }
+    .roomoverlay .panel {
+        width: 90%;
+        height: 50%;
+    }
+    .roomoverlay .panel:first-child {
+        border-right: 0;
+        border-bottom: 1px solid var(--softer-btn-border);
+    }
+    #navside1, #navcenter {
+        display: none;
+    }
+    #navside2 {
+        align-items: flex-start;
+        justify-content: space-between;
+        width: 90%;
+    }
+    #gear, #help {
+        margin-top: -15px;
+    }
+    #help.opened {
+        position: absolute;
+        top: 3vh;
+        background-color: var(--bg-color);
+    }
+    .collapsible {
+        display: none;
+        width: 45vw;
+    }
+    .collapsible.opened {
+        display: flex;
+    }
+    .queue {
+        justify-content: center;
+    }
+    .tutorialoverlay {
+        padding: 2vh 2vw 2vh 2vw;
+        height: 85vh;
+    }
+    .tutorialoverlay * {
+        font-size: large;
+    }
+    nav {
+        height: 15vh;
+    }
+    #slider {
+        margin-right: 0;
+    }
+}
+
+#overlay-create-schedule input[type=text] {
+    text-align: left;
+    padding: 0.5em;
+}
+#overlay-create-schedule input[type=button] {
+    width: 40vw;
+}
+.ocs-time {
+    width: 40px!important;
+    height: 40px!important;
+    margin: 10px!important;
+    padding: 5px!important;
+    text-align: center!important;
+    border: 1px solid var(--softer-btn-border)!important;
+    appearance: textfield;
+    font-size: 22px!important;
+}
+.ocs-time.btn {
+    font-size: 20px!important;
+    width: 52px!important;
+    height: 52px!important;
+}
+.calendar {
+    width: 90vw;
+    height: 80vh;
+    border-collapse: collapse;
+    z-index: 1;
+}
+#ocs-calendar {
+    user-select: none;
+}
+#schedule-calendar {
+    min-height: 120vh;
+}
+.calendar td, .calendar th {
+    font-size: 22px!important;
+    color: var(--text-color)!important;
+    border: 1px solid rgba(100, 100, 100, 0.75)!important;
+    font-family: 'Heebo';
+    width: 10vw;
+}
+.calendar th {
+    height: 8vh;
+}
+.calendar tbody {
+    border-collapse: collapse;
+}
+.calendar td:first-child, .calendar th:first-child {
+    text-align: center;
+    width: 5vw!important;
+}
+.calendar .addbtn {
+    position: relative;
+    width: 100%;
+    height: 4vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    color: var(--text-color);
+    border: none;
+    transition: all 0.05s;
+}
+.calendar .addbtn:hover {
+    background-color: var(--bg-hover);
+    cursor: pointer;
+}
+.calendar tr:nth-child(odd) td {
+    background-color: var(--btn-color);
+}
+.calendar tr:nth-child(even) td {
+    background-color: var(--bg-color);
+}
+.section-card {
+    position: absolute;
+    background-color: var(--bg-color)!important;
+    z-index: 10;
+    width: 99%;
+    border: 1px solid var(--softer-btn-border);
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: auto;
+    transition: all 0.1s;
+}
+.section-card p {
+    font-size: 20px;
+}
+#scheduler {
+    display: none;
+    padding-bottom: 2vh;
+}
+
+.section-editor {
+    justify-content: flex-start;
+}
+.section-editor p:first-child {
+    border-bottom: 1px solid;
+    font-weight: bold;
+}
+.section-editor select {
+    min-width: 200px;
+    width: 90%;
+    height: 4vh;
+    background-color: var(--bg-color);
+    border: 1px solid var(--softer-btn-border);
+    color: var(--text-color);
+    font-size: 1.25em;
+}
+
+
+/*****************************************************************/
+/* https://www.w3schools.com/howto/howto_css_custom_checkbox.asp */
+/* W3 CSS */
+/* For checkboxes */
+.checkcontainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 2vh;
+    position: relative;
+    padding-left: 35px;
+    margin: 12px;
+    cursor: pointer;
+    font-size: 22px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.checktext {
+    font-size: 1em;
+}
+/* Hide the browser's default check button */
+.checkcontainer input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+/* Create a custom check button */
+.checkbtn {
+    position: absolute;
+    top: -2px;
+    left: 0;
+    height: 25px;
+    width: 25px;
+    background-color: var(--header-color);
+    transition: background-color 0.1s;
+}
+
+.checkcontainer:hover input ~ .checkbtn {
+    background-color: var(--boiler-up-dark);
+}
+
+/* When the check button is checked, add a blue background */
+.checkcontainer input:checked ~ .checkbtn {
+    background-color: var(--boiler-up);
+}
+
+/* If we're in review mode, make it look non-clickable somehow */
+.checkcontainer input:disabled ~ .checkbtn {
+    filter: brightness(0.5);
+}
+
+/* Create the indicator (the dot/circle - hidden when not checked) */
+.checkbtn:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+/* Show the indicator (dot/circle) when checked */
+.checkcontainer input:checked ~ .checkbtn:after {
+    display: block;
+}
+
+/* Style the checkbtn */
+.checkcontainer .checkbtn:after {
+    left: 7px;
+    top: 2px;
+    width: 8px;
+    height: 14px;
+    border: solid var(--base-color);
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+#btncontainer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    width: max-content;
+    height: 4vh;
+}
+
+#schedule-title, #schedule-description {
+    margin: 0;
+}
+#schedule-description {
+    opacity: 0.7;
+    margin-bottom: revert-layer;
+}
+
+.eventcolor_0 { background-color: var(--event-bg-0)!important; border-color: var(--event-bg-0-full); }
+.eventcolor_0 .removebtn, .eventcolor_0 .removebtn:hover { background-color: var(--event-bg-0-full); }
+.eventcolor_1 { background-color: var(--event-bg-1)!important; border-color: var(--event-bg-1-full); }
+.eventcolor_1 .removebtn, .eventcolor_1 .removebtn:hover { background-color: var(--event-bg-1-full); }
+.eventcolor_2 { background-color: var(--event-bg-2)!important; border-color: var(--event-bg-2-full); }
+.eventcolor_2 .removebtn, .eventcolor_2 .removebtn:hover { background-color: var(--event-bg-2-full); }
+.eventcolor_3 { background-color: var(--event-bg-3)!important; border-color: var(--event-bg-3-full); }
+.eventcolor_3 .removebtn, .eventcolor_3 .removebtn:hover { background-color: var(--event-bg-3-full); }
+.eventcolor_4 { background-color: var(--event-bg-4)!important; border-color: var(--event-bg-4-full); }
+.eventcolor_4 .removebtn, .eventcolor_4 .removebtn:hover { background-color: var(--event-bg-4-full); }
+.eventcolor_5 { background-color: var(--event-bg-5)!important; border-color: var(--event-bg-5-full); }
+.eventcolor_5 .removebtn, .eventcolor_5 .removebtn:hover { background-color: var(--event-bg-5-full); }
+
+.section-card:hover {
+    filter: brightness(1.25);
+}
+.removebtn:hover {
+    opacity: 0.5;
+}
+
+:root {
+    --event-bg-0: hsl(180, 100%, 10%);
+    --event-bg-0-full: hsl(180, 100%, 40%);
+    --event-bg-1: hsl(125, 100%, 10%);
+    --event-bg-1-full: hsl(125, 100%, 35%);
+    --event-bg-2: hsl(50, 100%, 10%);
+    --event-bg-2-full: hsl(50, 100%, 35%);
+    --event-bg-3: hsl(30, 100%, 10%);
+    --event-bg-3-full: hsl(30, 100%, 35%);
+    --event-bg-4: hsl(0, 100%, 10%);
+    --event-bg-4-full: hsl(0, 100%, 35%);
+    --event-bg-5: hsl(270, 100%, 10%);
+    --event-bg-5-full: hsl(270, 100%, 35%);
+    --boilermaker-gold: #cfb991;
+    --boilermaker-gold-transparent: #cfb991aa;
+    --boilermaker-aged: #8e6f3e;
+    --boilermaker-aged-transparent: #8e6f3eaa;
+    --switch-icon: "🌙";
+    --switch-position: 25px;
+    --themeswitch-bg-color: #2a2a2b;
+    --waiter-p-color: black;
+    --bg-color: #1a1a1b;
+    --bg-hover: #3c3c3e;
+    --self-bg-color: #112;
+    --text-color: #eee;
+    --disabled-text-color: rgba(240, 240, 240, 0.7);
+    --softer-btn-border: #cfb991aa;
+    --flipped-btn-color: #fff;
+    --header-color: #333;
+    --flipped-text-color: #222;
+    --btn-color: #222;
+    --hsl-luminance: 100%;
+    --boiler-up: #cfb991;
+    --boiler-up-text: #cfb991;
+    --boiler-up-text-dark: #7A6236;
+    --boiler-up-transparent: #cfb9914a;
+    --boiler-up-coloredemphasis: #ff9274;
+    --boiler-up-selection: #cfb9913e;
+    --boiler-up-bg-hover: #362b18;
+    --boiler-up-dark: #cfb9914a;
+    --base-color: #000;
+}
+[theme="light"] {
+    --event-bg-0-full: hsl(180, 100%, 40%);
+    --event-bg-0: hsl(180, 100%, 85%);
+    --event-bg-1-full: hsl(125, 100%, 45%);
+    --event-bg-1: hsl(125, 100%, 85%);
+    --event-bg-2-full: hsl(50, 100%, 45%);
+    --event-bg-2: hsl(50, 100%, 85%);
+    --event-bg-3-full: hsl(30, 100%, 45%);
+    --event-bg-3: hsl(30, 100%, 85%);
+    --event-bg-4-full: hsl(0, 100%, 45%);
+    --event-bg-4: hsl(0, 100%, 85%);
+    --event-bg-5-full: hsl(270, 100%, 45%);
+    --event-bg-5: hsl(270, 100%, 85%);
+    --boilermaker-gold: #cfb991;
+    --boilermaker-gold-transparent: #cfb991aa;
+    --boilermaker-aged: #8e6f3e;
+    --boilermaker-aged-transparent: #8e6f3eaa;
+    --switch-icon: "☀️";
+    --switch-position: -15px;
+    --themeswitch-bg-color: #dddddf;
+    --waiter-p-color: white;
+    --bg-color: #e2e2e2;
+    --bg-hover: #d7d7d7;
+    --self-bg-color: #eef;
+    --text-color: #000;
+    --disabled-text-color: rgba(0, 0, 0, 0.7);
+    --softer-btn-border: #8e6f3e;
+    --flipped-btn-color: #222;
+    --header-color: #ccc;
+    --flipped-text-color: #fff;
+    --btn-color: #fff;
+    --hsl-luminance: 30%;
+    --boiler-up: #cfb991;
+    --boiler-up-text: #756852;
+    --boiler-up-text-dark: #B6AA96;
+    --boiler-up-transparent: #cfb9914a;
+    --boiler-up-coloredemphasis: #9e3a2e;
+    --boiler-up-selection: #9686672e;
+    --boiler-up-bg-hover: #e6dbc6;
+    --boiler-up-dark: #b19e7b;
+    --base-color: #fff;
+}

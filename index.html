@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="UTF-8">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <title>Tabular</title>
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+    <nav>
+        <div id="navcenter">
+            <p style="opacity: 0; font-size: 40px">Tabular</p>
+            <p style="opacity: 0; font-size: 28px">Schedule Preference Tracker</p>
+        </div>
+        <div id="navside2">
+            <div id="slider">
+                <span class="switchCylinder" role="img" aria-label="theme_switch" onclick="switchTheme()">
+                    <span class="switchCircle" id="themeSwitchCircle"></span>
+                </span>
+            </div>
+            <div id="collapse" class="collapsible-in-overlay">
+                <div style='display: flex; flex-direction: row;'>
+                    <a target="_blank" href="https://github.com/norandomtechie/tabular" style="text-decoration-line: none;"><p id="help" class="">❓</p></a>
+                    <p id="gear" class="">⚙️</p>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="roomoverlay" id="landing-page">
+        <div class="panel" id="createpanel">
+            <h1>Create a new scheduler</h1>
+            <div class="row" id="createschedulerow" style="justify-content: center; margin-bottom: 50px">
+                <input type="text" id="createschedule" name="createschedule" pattern="[^;]*" placeholder="Like 'ECE 695 Fall 2024'" value="">
+            </div>
+            <input type="button" id="createschedulebtn" style="cursor: pointer" value="Create">
+        </div>
+        <div class="panel" id="joinpanel">
+            <h1>Open an existing scheduler</h1>
+            <div class="row" style="margin-bottom: 50px">
+                <input type="text" id="joinschedule" name="joinschedule" placeholder="Like 'ece-695-fall-2024'" pattern="[^;]*" value="">
+            </div>
+            <input type="button" id="joinschedulebtn" style="cursor: pointer" value="Join">
+        </div>
+    </div>
+    <div class="roomoverlay" id="overlay-create-schedule" style="display: none">
+        <div class="panel" id="ocs-start" style="width: 100%">
+            <h1 id="ocs-title">Creating a new schedule</h1>
+
+            <p style="border: 1px solid var(--softer-btn-border); width: 90vw; margin: 1vh 0 2vh 0;">
+
+            <div class="row" style="justify-content: space-between; width: 90%">
+                <h2 id="ocs-desc">Enter a description (optional)</h2>
+                <input type="text" id="createscheduledesc" name="createscheduledesc" placeholder="TA Scheduler for ECE 695 in Fall 2024" pattern="[^;]*" value="">
+            </div>
+
+            <div class="row" style="justify-content: space-between; width: 90%">
+                <h2 id="ocs-desc">Select days for schedule</h2>
+                <div class="row" style="width: auto; flex-wrap: wrap; max-width: 60%; margin: 1vh 0">
+                    <label class="checkcontainer"><span class="checktext">Monday</span>
+                        <input type="checkbox" checked="true" name="monday" value="Monday">
+                        <span class="checkbtn"></span>
+                    </label>
+                    <label class="checkcontainer"><span class="checktext">Tuesday</span>
+                        <input type="checkbox" checked="true" name="tuesday" value="Tuesday">
+                        <span class="checkbtn"></span>
+                    </label>
+                    <label class="checkcontainer"><span class="checktext">Wednesday</span>
+                        <input type="checkbox" checked="true" name="wednesday" value="Wednesday">
+                        <span class="checkbtn"></span>
+                    </label>
+                    <label class="checkcontainer"><span class="checktext">Thursday</span>
+                        <input type="checkbox" checked="true" name="thursday" value="Thursday">
+                        <span class="checkbtn"></span>
+                    </label>
+                    <label class="checkcontainer"><span class="checktext">Friday</span>
+                        <input type="checkbox" checked="true" name="friday" value="Friday">
+                        <span class="checkbtn"></span>
+                    </label>
+                    <label class="checkcontainer"><span class="checktext">Saturday</span>
+                        <input type="checkbox" name="saturday" value="Saturday">
+                        <span class="checkbtn"></span>
+                    </label>
+                    <label class="checkcontainer"><span class="checktext">Sunday</span>
+                        <input type="checkbox" name="sunday" value="Sunday">
+                        <span class="checkbtn"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="row" style="justify-content: space-between; width: 90%">
+                <h2 id="ocs-desc">Select time slots for schedule<br><em style="font-size: 16px">(All times are in the Eastern Time Zone.)</em></h2>
+                <div class="row" style="width: auto; flex-wrap: wrap; max-width: 60%; margin: 1vh 0">
+                    <input class="ocs-time" type="number" id="ocs-start-hour" value="7">
+                    <p style="font-size: 22px!important">:00</p>
+                    <button class="ocs-time btn" id="ocs-start-ampm">AM</button>
+                    
+                    <p>&nbsp;</p><p>&nbsp;</p>
+                    <p style="font-size: 22px!important">to</p>
+                    <p>&nbsp;</p><p>&nbsp;</p>
+                    
+                    <input class="ocs-time" type="number" id="ocs-end-hour" value="5">
+                    <p style="font-size: 22px!important">:00</p>
+                    <button class="ocs-time btn" id="ocs-end-ampm">PM</button>
+                </div>
+            </div>
+
+            <p style="border: 1px solid var(--softer-btn-border); width: 90vw; margin: 2vh 0;"></p>
+
+            <div class="row">
+                <input type="button" id="ocs-create-btn" style="cursor: pointer" value="Create">
+                <input type="button" class="ocs-cancel-btn" style="cursor: pointer" value="Cancel">
+            </div>
+        </div>
+        <div class="panel" id="ocs-calendar" style="display: none; width: 100%; justify-content: flex-start; overflow-y: scroll;">
+            <h1>Create timeslots</h1>
+            <div class="row">
+                <input type="button" id="ocs-save-btn" style="cursor: pointer; width: 25%" value="Save">
+                <input type="button" id="ocs-back-btn" style="cursor: pointer; width: 25%" value="Back">
+                <input type="button" class="ocs-cancel-btn" style="cursor: pointer; width: 25%" value="Cancel">
+            </div>  
+            <p style="border: 1px solid var(--softer-btn-border); width: 90vw; margin: 4vh 0;"></p>
+        </div>
+    </div>
+    <div class="container" id="scheduler">
+        <h1 id="schedule-title">(title) Schedule</h1>
+        <h2 id="schedule-description">(description)</h2>
+        <p style="display: none">To share this with others, give them <a id="schedule-link" href="?schedule=(id)">this link</a>.</p>
+    </div>
+</body>
+<!-- Designed and deployed by Niraj Menon, 2024. -->
+<script>
+    window.is_admin = "--is_admin--";
+    function flipAMPM() {
+        console.log(event.target)
+        event.target.innerHTML = (event.target.innerHTML == "AM") ? "PM" : "AM";
+    }
+    async function openCreateSchedule() {
+        // ENSURE SCHEDULE DOES NOT EXIST!
+        var name = document.getElementById('createschedule').value;
+        if (name == "" || name.length < 5 || name.match(/^[a-zA-Z0-9 ]+$/) == null) {
+            alert("Please enter a valid name for the schedule.  It must contain at least 5 alphanumeric characters (A-Za-z0-9) and/or spaces.");
+            return;
+        }
+        var id = Array.from(name.toLowerCase().replace(/ /g, '-')).filter(c => ((c.match(/[a-z0-9-]/i)))).join("");
+        var r = await fetch('api.wsgi?id=' + id);
+        if (r.status == 200) {
+            alert("A schedule with this name already exists!  Please choose a different name.");
+            // return;
+        }
+        // send nothing until the form is filled out.
+        // switch to overlay-create-schedule
+        document.getElementById('overlay-create-schedule').style.display = 'flex';
+        document.getElementById('landing-page').style.display = 'none';
+        // add name to overlay-create-schedule to say "Creating schedule for <name>"
+        document.getElementById('ocs-title').innerHTML = 'Creating schedule for <span style="text-decoration: underline">' + document.getElementById('createschedule').value + '</b>';
+    }
+    function returnToCreateSchedule() {
+        document.getElementById('ocs-start').style.display = 'flex';
+        document.getElementById('ocs-calendar').style.display = 'none';
+    }
+    // Generate the new calendar
+    async function createCalendar(days, startHour, endHour, startMinute=0, endMinute=0, disable=false) {           
+        var calendar = document.createElement('table');
+        calendar.classList.add('calendar');
+        var thead = document.createElement('thead');
+        calendar.appendChild(thead);
+        var tbody = document.createElement('tbody');
+        calendar.appendChild(tbody);
+
+        // Add the new day columns to the thead
+        var tr = document.createElement('tr');
+        thead.appendChild(tr);
+        days.forEach(function(day) {
+            var cell = document.createElement('th');
+            cell.innerHTML = day;
+            tr.appendChild(cell);
+        });
+
+        // Generate the rows for each hour
+        for (var hour = startHour; hour <= endHour; hour++) {
+            var time = (hour > 12 ? hour - 12 : hour) + ":" + (startMinute == 0 ? '00' : '30') + " " + (hour >= 12 ? "PM" : "AM");
+            var newRow = document.createElement('tr');
+            var timeCell = document.createElement('td');
+            timeCell.innerHTML = time;
+            newRow.appendChild(timeCell);
+
+            // Add the cells for each day
+            for (var i = 1; i < days.length; i++) {
+                var newCell = document.createElement('td');
+                var btn1 = document.createElement('button');
+                btn1.id = hour + "-" + (i - 1) + "-0";
+                btn1.innerHTML = "+";
+                btn1.classList.add('addbtn');
+                var btn2 = document.createElement('button');
+                btn2.id = hour + "-" + (i - 1) + "-1";
+                btn2.innerHTML = "+";
+                btn2.classList.add('addbtn');
+                newCell.appendChild(btn1);
+                newCell.appendChild(btn2);
+                if (!disable) {
+                    btn1.addEventListener('mousedown', addTimeSlot);
+                    btn1.addEventListener('mouseenter', adjustTimeSlot);
+                    btn1.addEventListener('mouseup', completeTimeSlot);
+                    btn2.addEventListener('mousedown', addTimeSlot);
+                    btn2.addEventListener('mouseenter', adjustTimeSlot);
+                    btn2.addEventListener('mouseup', completeTimeSlot);
+                }
+                newRow.appendChild(newCell);
+            }
+            tbody.appendChild(newRow);
+        }
+
+        return calendar;
+    }
+    async function createSchedule() {
+        var calendar = document.getElementById('ocs-calendar');
+        
+        // Get the start and end time values
+        var startHour = parseInt(document.getElementById('ocs-start-hour').value);
+        var startMinute = 0;
+        var startAMPM = document.getElementById('ocs-start-ampm').innerHTML;
+        var endAMPM = document.getElementById('ocs-end-ampm').innerHTML;
+        var endHour = parseInt(document.getElementById('ocs-end-hour').value) + ((endAMPM == "PM") ? 12 : 0);
+        var endMinute = 0;
+
+        var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        var days = ['Time'];
+        checkboxes.forEach(function(checkbox) {
+            if (checkbox.checked) {
+                days.push(checkbox.value);
+            }
+        });
+
+        var calendar = await createCalendar(days, startHour, endHour);
+        document.getElementById('ocs-calendar').appendChild(calendar);
+
+        // Switch to the calendar view
+        document.getElementById('ocs-start').style.display = 'none';
+        document.getElementById('ocs-calendar').style.display = 'flex';
+    }
+    // when addbtn is clicked, set innerHTML to "&nbsp;" and create an overlay div 
+    var eventcolor_idx = 0;
+    function addTimeSlot(event) {
+        if (window.timeSlotOverlay) return;
+        // removebtn/contact is bubbling up, ignore it
+        if (!event.target.classList.contains('addbtn')) return;
+        if (window.timeSlotOverlays && window.timeSlotOverlays.map(o=>o.buttons).reduce((p,n)=>p.concat(n), []).includes(event.target)) return;
+        console.log("addTimeSlot", event.target);
+        var btn = event.currentTarget;
+        btn.innerHTML = "&nbsp;";
+        var overlay = document.createElement('div');
+        overlay.classList.add('section-card');
+        overlay.style.height = btn.offsetHeight + 'px';
+        // display starting time as "X:YY AM - Z:YY AM"
+        var buttonIdParts = btn.id.split('-');
+        var startTime = buttonIdParts[0] + ':' + (buttonIdParts[2] == '0' ? '00' : '30') + ' ' + (parseInt(buttonIdParts[0]) >= 12 ? 'PM' : 'AM');
+        if (parseInt(buttonIdParts[2]) == 1) {
+            var endTime = (parseInt(buttonIdParts[0]) + 1) + ':00 ' + (parseInt(buttonIdParts[0]) >= 11 ? 'PM' : 'AM');
+        }
+        else {
+            var endTime = parseInt(buttonIdParts[0]) + ':30 ' + (parseInt(buttonIdParts[0]) >= 11 ? 'PM' : 'AM');
+        }
+        overlay.innerHTML = '<p>' + startTime + ' - ' + endTime + '</p>';
+        overlay.buttons = [btn];
+        btn.style['align-items'] = 'flex-start';
+        window.timeSlotOverlay = overlay;
+        btn.appendChild(overlay);
+    }
+    // if entering addbtn while dragging, set its innerHTML to "&nbsp;" and extend overlay div height to it
+    function adjustTimeSlot(event) {
+        // if we are not already dragging
+        if (!window.timeSlotOverlay) return;
+        // do not go into other days!
+        if (event.currentTarget.id.split('-')[1] != window.timeSlotOverlay.parentElement.id.split("-")[1]) return;
+        // do not go into other section-cards!
+        if (Array.from(event.currentTarget.children).filter(e => e.classList.contains('section-card')).length > 0) return;
+        // do not go into btn if it is more than 30 minutes away from the last btn
+        if (Math.abs(parseInt(event.currentTarget.id.split('-')[0]) - parseInt(window.timeSlotOverlay.buttons[window.timeSlotOverlay.buttons.length - 1].id.split('-')[0]) + parseInt(event.currentTarget.id.split('-')[2]) - parseInt(window.timeSlotOverlay.buttons[window.timeSlotOverlay.buttons.length - 1].id.split('-')[2]) / 2) > 1) return;
+        console.log("adjustTimeSlot", event.currentTarget);
+        // if button was already modified, we must be moving back up. reduce height
+        if (window.timeSlotOverlay.buttons.includes(event.currentTarget)) {
+            // console.log("moving up");
+            // window.timeSlotOverlay.style.height = (parseInt(window.timeSlotOverlay.style.height) - event.currentTarget.clientHeight + 1.75) + 'px';
+            // window.timeSlotOverlay.buttons = window.timeSlotOverlay.buttons.filter(b => b != event.currentTarget);
+            return;
+        }
+        var btn = event.currentTarget;
+        // add 4vh to overlay div height
+        btn.innerHTML = "&nbsp;";
+        // add second time after first time so innerHTML says "X:YY AM - Z:YY AM"
+        var buttonIdParts = window.timeSlotOverlay.buttons[0].id.split('-');
+        var startTime = buttonIdParts[0] + ':' + (buttonIdParts[2] == '0' ? '00' : '30') + ' ' + (parseInt(buttonIdParts[0]) >= 12 ? 'PM' : 'AM');
+        var btnIdParts = btn.id.split('-');
+        var endHour = parseInt(btnIdParts[0]);
+        var endMinute = parseInt(btnIdParts[2]) == 0 ? 30 : 0;
+        var endAMPM = parseInt(btnIdParts[0]) >= 12 ? 'PM' : 'AM';
+        if (parseInt(btnIdParts[2]) == 1) {
+            endHour += 1;
+            endMinute = 0;
+        }
+        var endTime = endHour + ':' + (endMinute == 0 ? '00' : '30') + ' ' + endAMPM;
+        window.timeSlotOverlay.innerHTML = '<p>' + startTime + ' - ' + endTime + '</p>';
+        window.timeSlotOverlay.style.height = (parseInt(window.timeSlotOverlay.style.height) + btn.clientHeight) + 'px';
+        window.timeSlotOverlay.buttons.push(btn);
+    }
+    // if mouse is released inside addbtn, set its innerHTML to "&nbsp;" and shrink overlay div height to it
+    function completeTimeSlot(event) {
+        if (!window.timeSlotOverlay) return;
+        console.log("completeTimeSlot", event.currentTarget);
+        var secnum = prompt("Enter a section number.  Hit Escape to cancel this slot.")
+        if (secnum == null || (secnum.match(/^[0-9]+$/) == null)) {
+            // reverse changes to all buttons
+            window.timeSlotOverlay.buttons.forEach(function(btn) {
+                btn.innerHTML = "+";
+                btn.style['align-items'] = 'center';
+                // btn.removeAttribute('disabled');
+            });
+            window.timeSlotOverlay.remove();
+            window.timeSlotOverlay = null;
+            return;
+        }
+        var btn = event.currentTarget;
+        window.timeSlotOverlay.style.height = parseInt(window.timeSlotOverlay.buttons.length * (btn.clientHeight+0.75)).toString() + 'px';
+        window.timeSlotOverlay.innerHTML = window.timeSlotOverlay.innerHTML.replace('<p>', '<p>Section ' + secnum + '<br>');
+        
+        // add button to remove this time slot
+        var removebtn = document.createElement('button');
+        removebtn.innerHTML = "X";
+        removebtn.classList.add('removebtn');
+        removebtn.classList.add('btn');
+        removebtn.addEventListener('click', removeTimeSlot, false);
+        window.timeSlotOverlay.appendChild(removebtn);
+        window.timeSlotOverlay.sectionNum = secnum;
+        window.timeSlotOverlay.day = document.querySelector('.calendar').querySelector('th:nth-child(' + (2 + parseInt(btn.id.split('-')[1])) + ')').innerHTML
+        window.timeSlotOverlay.timeRange = window.timeSlotOverlay.innerHTML.split('<br>')[1].split(' - ')[0] + ' to ' + window.timeSlotOverlay.innerHTML.split('<br>')[1].split(" - ")[1].split("</p>")[0];
+        // set background color to --waiter-bg-0 to --waiter-bg-5, depending on how many timeslots have been created so far
+        if (!window.timeSlotOverlays)
+            window.timeSlotOverlays = [window.timeSlotOverlay];
+        else
+            window.timeSlotOverlays.push(window.timeSlotOverlay);
+        window.timeSlotOverlay = null;
+    }
+    function removeTimeSlot(event) {
+        if (event.currentTarget.parentElement.buttons) {
+            event.currentTarget.parentElement.buttons.forEach(function(btn) {
+                btn.innerHTML = "+";
+                btn.style['align-items'] = 'center';
+            });
+        }
+        // remove from window.timeSlotOverlays
+        window.timeSlotOverlays = window.timeSlotOverlays.filter(o => o != event.currentTarget.parentElement);
+        event.currentTarget.remove();
+    }
+    async function submitSchedule(days, startHour, endHour, startMinute=0, endMinute=0) {
+        // there should have been at least one created timeslot
+        if (!window.timeSlotOverlays) {
+            alert("You must create at least one timeslot before saving the schedule.");
+            return;
+        }
+        // remove any old calendars
+        var calendar = document.querySelector('.calendar');
+        if (calendar) {
+            calendar.remove();
+        }
+        
+        // get list of timeslots
+        var timeslots = window.timeSlotOverlays.map(o => {
+            return {
+                sectionNum: o.sectionNum,
+                day: o.day,
+                timeRange: o.timeRange
+            }
+        });
+        // combine timeslots from {'sectionNum': 'N', day: 'D', timeRange: 'X to Y'} to one dictionary with 'sectionNum': ['N', 'D', 'X to Y'] for each timeslot
+        var timeslots = timeslots.reduce((acc, val) => {
+            if (!acc[val.sectionNum]) {
+                acc[val.sectionNum] = [val.day, val.timeRange];
+            }
+            else {
+                alert("Error: multiple timeslots with the same section number.  Impossible error.");
+                return;
+            }
+            return acc;
+        }, {});
+        console.log(timeslots);
+        
+        // create table from timeslots
+        var scheduler = document.getElementById('scheduler');
+        scheduler.children[0].innerHTML = document.getElementById('createschedule').value + " Schedule";
+
+        var days = ['Time'];
+        // get days from timeslots
+        var timeslotsArr = Object.values(timeslots);
+        timeslotsArr.forEach(function(timeslot) {
+            if (!days.includes(timeslot[0])) {
+                days.push(timeslot[0]);
+            }
+        });
+        // sort days by _days
+        var _days = ['Time', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        days = days.sort((a, b) => {
+            if (a == 'Time') return -1;
+            if (b == 'Time') return 1;
+            return _days.indexOf(a) - _days.indexOf(b);
+        });
+        // get earliest hour from timeslot
+        var startHour = 24;
+        timeslotsArr.forEach(function(timeslot) {
+            var timeRange = timeslot[1].split(' to ');
+            var sH = parseInt(timeRange[0].split(':')[0]);
+            if (sH < startHour) {
+                startHour = sH;
+            }
+        });
+        // get latest hour from timeslot
+        var endHour = 0;
+        timeslotsArr.forEach(function(timeslot) {
+            var timeRange = timeslot[1].split(' to ');
+            var eH = parseInt(timeRange[1].split(':')[0]);
+            if (eH > endHour) {
+                endHour = eH;
+            }
+        });
+        var startMinute = 0;
+        var endMinute = 0;
+
+        var r = await fetch('api.wsgi', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: document.getElementById('createschedule').value,
+                description: document.getElementById('createscheduledesc').value,
+                sections: timeslots,
+                users: [window.username]
+            })
+        });
+        if (r.status != 200) {
+            alert("There was an error creating the schedule.  Please try again later.");
+            return;
+        }
+        var response = await r.text();
+        window.schedulerID = response;
+
+
+        // TODO: send to server
+        // assuming server 200s, create calendar view from these timeslots
+        // hide overlay-create-schedule
+        document.getElementById('overlay-create-schedule').style.display = 'none';
+        // show scheduler
+        document.getElementById('scheduler').style.display = 'flex';
+
+        // show the schedule link
+        document.getElementById('schedule-link').href = window.location.href + "?id=" + window.schedulerID;
+        document.getElementById('schedule-link').innerHTML = window.location.href + "?id=" + window.schedulerID;
+        
+        // create calendar and add timeslots to it
+        var calendar = await createCalendar(days, startHour, endHour, startMinute, endMinute, false);
+
+        // disable all buttons and set their innerHTML to "&nbsp;"
+        var buttons = Array.from(calendar.querySelectorAll('button'));
+        buttons.forEach(function(button) {
+            button.innerHTML = "&nbsp;";
+            button.style['align-items'] = 'center';
+            button.setAttribute('disabled', 'true');
+        });
+
+        // calculate minimum height for each section-card
+        calendar.id = 'schedule-calendar';
+        scheduler.appendChild(calendar);
+        Object.keys(timeslots).forEach(function(k) {
+            var timeslot = timeslots[k];
+            timeslot.sectionNum = k;
+            timeslot.day = timeslot[0];
+            timeslot.timeRange = timeslot[1];
+            var tbody = calendar.querySelector('tbody');
+            var dayIndex = days.indexOf(timeslot.day);
+            var timeRange = timeslot.timeRange.split(' to ');
+            var startHour = parseInt(timeRange[0].split(':')[0]);
+            var startMinute = parseInt(timeRange[0].split(':')[1].split(' ')[0]);
+            var endHour = parseInt(timeRange[1].split(':')[0]);
+            var endMinute = parseInt(timeRange[1].split(':')[1].split(' ')[0]);
+            var startButton = tbody.querySelector('button[id="' + startHour + '-' + (dayIndex-1) + '-' + (startMinute === 30 ? '1' : '0') + '"]');
+            var endButton = tbody.querySelector('button[id="' + endHour + '-' + (dayIndex-1) + '-' + (endMinute === 30 ? '1' : '0') + '"]');
+            
+            // draw timeslot from startButton to endButton
+            var overlay = document.createElement('div');
+            overlay.classList.add('section-card');
+            overlay.classList.add('section-editor');
+            overlay.classList.add(`eventcolor_${eventcolor_idx}`);
+            eventcolor_idx = (eventcolor_idx + 1) % 6;
+            overlay.style.height = ((endHour - startHour) * 2 + (endMinute - startMinute) / 30) * (startButton.parentNode.clientHeight/2) + 'px';
+            overlay.innerHTML = '<p>Section ' + timeslot.sectionNum + '<br>' + timeslot.timeRange + '</p>';
+            
+            // add preferences
+            const parser = new DOMParser();
+            var preferences = `<select class='schedule-select' name="${timeslot.sectionNum}">
+                <option value="0 Unavailable" selected="">0 Unavailable</option>
+                <option value="1 Do not want">1 Do not want</option>
+                <option value="2 Only if needed">2 Only if needed</option>
+                <option value="3 I can do it">3 I can do it</option>
+                <option value="4 Maybe">4 Maybe</option>
+                <option value="5 Want this time">5 Want this time</option>
+                <option value="6 Prefer this time">6 Prefer this time</option>
+                <option value="7 Really want this">7 Really want this</option>
+                <option value="8 Really want most">8 Really want most</option>
+            </select>`;
+            var prefs = parser.parseFromString(preferences, 'text/html').body.firstChild;
+            prefs.innerHTML = preferences;
+            overlay.appendChild(prefs);
+
+            // add choices
+            var spanner = `<select class='schedule-select' name="${timeslot.sectionNum}span">
+                <option value="= Entire time" selected="">= Entire time</option>
+                <option value="+ Only first part">+ Only first part</option>
+                <option value="- Only last part">- Only last part</option>
+            </select>`
+            var span = parser.parseFromString(spanner, 'text/html').body.firstChild;
+            span.innerHTML = spanner;
+            overlay.appendChild(span);
+
+            // add a total interest counter
+            var interest = document.createElement('p');
+            interest.id = 'interest-' + timeslot.sectionNum;
+            interest.innerHTML = "Availablity score: 0";
+            interest.title = 'This is the total score for this time slot.  It is calculated by summing all the added preferences for this time slot.';
+            overlay.appendChild(interest);
+            
+            // fix up startbutton
+            startButton.innerHTML = "&nbsp;";
+            startButton.style['align-items'] = 'flex-start';
+            startButton.appendChild(overlay);
+        });
+
+        // add a button to return to the overlay
+        // insert before calendar
+        
+        if (!document.getElementById('leaveschedulebtn')) {
+            var btndiv = document.createElement('div');
+            btndiv.id = 'btncontainer';
+
+            var saveButton = document.createElement('button');
+            saveButton.id = 'saveschedulebtn';
+            saveButton.innerHTML = "Save options";
+            saveButton.addEventListener('click', ()=>{alert('Options are saved automatically as you change them (unless an error occurs).')})
+            saveButton.classList.add('btn');
+            saveButton.style.flex = '1 0 auto';
+            btndiv.appendChild(saveButton);
+
+            btndiv.appendChild(document.createElement('p'));
+
+            if (window.is_admin) {
+                var editButton = document.createElement('button');
+                editButton.id = 'adminaddbtn';
+                editButton.innerHTML = "Add editors";
+                editButton.classList.add('btn');
+                editButton.addEventListener('click', adminAddUsers, false);
+                editButton.style.flex = '1 0 auto';
+                btndiv.appendChild(editButton);
+
+                btndiv.appendChild(document.createElement('p'));
+
+                var editButton = document.createElement('button');
+                editButton.id = 'adminrembtn';
+                editButton.innerHTML = "Remove editors";
+                editButton.classList.add('btn');
+                editButton.addEventListener('click', adminRemUsers, false);
+                editButton.style.flex = '1 0 auto';
+                btndiv.appendChild(editButton);
+
+                btndiv.appendChild(document.createElement('p'));
+
+                var jsonButton = document.createElement('button');
+                jsonButton.id = 'jsonbtn';
+                jsonButton.innerHTML = "Download JSON";
+                jsonButton.classList.add('btn');
+                jsonButton.addEventListener('click', downloadJSON, false);
+                jsonButton.style.flex = '1 0 auto';
+                btndiv.appendChild(jsonButton);
+
+                btndiv.appendChild(document.createElement('p'));
+            }
+
+            var returnButton = document.createElement('button');
+            returnButton.id = 'leaveschedulebtn';
+            returnButton.innerHTML = "Leave scheduler";
+            returnButton.classList.add('btn');
+            returnButton.addEventListener('click', returnToOverlay, false);
+            returnButton.style.flex = '1 0 auto';
+            btndiv.appendChild(returnButton);
+            
+            // insert <p> as padding
+            var padding = document.createElement('p');
+            padding.innerHTML = "&nbsp;";
+            scheduler.insertBefore(btndiv, calendar);
+            
+            if (window.is_admin) {
+                var link = document.createElement('p');
+                var href = window.location.origin + window.location.pathname;
+                link.style.textAlign = 'center';
+                link.innerHTML = "To share this with others, give them the link below, and add them as permitted editors using the button above.<br><a target='_blank' href='" + href + "?id=" + window.schedulerID + "'>" + href + "?id=" + window.schedulerID + "</a>";            
+                link.style.fontSize = '20px';
+                scheduler.insertBefore(link, calendar);
+            }
+            scheduler.insertBefore(padding, calendar);
+        }
+
+        // set up onchange events to update the server
+        registerScheduleEventHandlers();
+
+        // we created schedule, so (look at me, ) we are the admin now.
+        window.is_admin = true;
+
+        // change all addbtn to show "&nbsp;"
+        Array.from(document.querySelectorAll(".addbtn")).forEach(e => {
+            if (e.innerHTML == "+")
+                e.innerHTML = "&nbsp;";
+        })
+    }
+
+    async function adminAddUsers() {
+        var prompt = window.prompt("Enter the usernames of the user you would like to add edit permissions for on this schedule, comma-separated.  Enter nothing to see the current list.");
+        if (prompt == null) return;
+        var users = prompt.split(',').map(u => u.trim().toLowerCase());
+        // validate each user is [a-z0-9]{2,8}
+        bad = []
+        users.forEach(u => {
+            if (!u.match(/^[a-z0-9]{2,8}$/g) && u != "") {
+                bad.push(u)
+            }
+        })
+        if (bad.length > 0) {
+            alert("The following usernames appear to be invalid:\n" + bad.join("\n") + "\nThe Regex used was [a-z0-9]{2,8}");
+            return;
+        }
+        try {
+            var r = await fetch('api.wsgi', { method: 'POST', body: JSON.stringify({'id': window.schedulerID, 'addedit': users.join(',')}) });
+            var t = await r.text();
+            if (t.startsWith("Updated users")) {
+                if (users.reduce((p,n)=>{p+n}) == "") {
+                    alert("The current list of users is: " + t.split('\n')[1].slice(1))
+                }
+                else {
+                    alert("Success adding all users! The current list of users is now: " + t.split('\n')[1].slice(1));
+                }
+            }
+            else {
+                alert("Something went wrong.  See console log for details.");
+                console.log(r);
+                console.log(t);
+            }
+        }
+        catch(err) {
+            alert("Something went wrong.  See console log for details.");
+            console.error(err);
+        }
+    }
+
+    async function adminRemUsers() {    
+        var prompt = window.prompt("Enter the usernames of the user you would like to remove edit permissions for on this schedule, comma-separated. Enter nothing to see the current list.");
+        if (prompt == null) return;
+        var users = prompt.split(',').map(u => u.trim().toLowerCase());
+        // validate each user is [a-z0-9]{2,8}
+        var bad = [];
+        users.forEach(u => {
+            if (!u.match(/[a-z0-9]{2,8}/g)) {
+                bad.push(u);
+            }
+        });
+        if (bad.length > 0) {
+            alert("The following usernames appear to be invalid:\n" + bad.join("\n") + "\nThe Regex used was [a-z0-9]{2,8}");
+            return;
+        }
+        try {
+            var r = await fetch('api.wsgi', { method: 'POST', body: JSON.stringify({'id': window.schedulerID, 'remedit': users.join(',')}) });
+            var t = await r.text();
+            if (t.startsWith("Updated users")) {
+                if (users.length == 0) {
+                    alert("The current list of users is: " + t.split('\n')[1]);
+                } else {
+                    alert("Success removing all users! The current list of users is now: " + t.split('\n')[1]);
+                }
+            } else {
+                alert("Something went wrong. See console log for details.");
+                console.log(r);
+                console.log(t);
+            }
+        } catch (err) {
+            alert("Something went wrong. See console log for details.");
+            console.error(err);
+        }
+    }
+
+    function registerScheduleEventHandlers() {
+        // when any of the inputs change while a schedule is being displayed, update the server
+        var selects = document.querySelectorAll('select');
+        selects.forEach(function(select) {
+            select.addEventListener('change', scheduleInputHandler);
+        });
+    }
+
+    async function scheduleInputHandler(event) {
+        // combine all input values into a single object, with the input name as the key
+        // two types of names: sectionNum (number only) and sectionNumspan (numerical with "span" added)
+        var inputs = {};
+        var selects = document.querySelectorAll('.schedule-select');
+        selects.forEach(function(select) {
+            inputs[select.name] = select.value;
+        }); 
+        // API expected format: {"sectionN1": ['N1', '=/+/-'], "sectionN2": ['N2', '=/+/-'], ...}
+        var timeslots = {};
+        for (var key in inputs) {
+            if (key.includes('span')) {
+                var sectionNum = key.split('span')[0];
+                if (!timeslots[sectionNum]) {
+                    timeslots[sectionNum] = [inputs[sectionNum], inputs[key]];
+                }
+                else {
+                    alert("Error: no/multiple span values for the same section number.  Impossible error.");
+                    return;
+                }
+            }
+        }
+        // send to server
+        // N is number, '=/+/-' is preference (number + "span")
+        var r = await fetch('api.wsgi?id=' + window.schedulerID, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "id": window.schedulerID,
+                "timeslots": timeslots
+            })
+        });
+        if (r.status != 200) 
+            alert("There was an error updating the schedule.  Please try again later.");
+        var response = await r.text();
+        // repsonse is {'secNum': availabilityScore, ...}
+        // update those scores on the page
+        var scores = JSON.parse(response);
+        for (var key in scores) {
+            var interestParagraph = document.getElementById('interest-' + key);
+            interestParagraph.innerHTML = "Availablity score: " + scores[key];
+        }
+    }
+
+    function retrieveAndRenderSchedule() {
+        // ensure id is valid (alphanumeric chars and hyphens)
+        var id = document.getElementById('joinschedule').value;
+        if (!id.match(/^[a-zA-Z0-9-]+$/)) {
+            alert("Invalid schedule ID.  Please try again.");
+            return;
+        }
+        // get schedule from server
+        fetch('api.wsgi?id=' + id)
+            .then(response => response.json())
+            .then(async data => {
+                window.schedulerID = id;
+                window.schedulerData = data;
+                window.is_admin = data.is_admin;
+                // remove any old calendars
+                var calendars = Array.from(document.querySelectorAll('.calendar'));
+                calendars.forEach(function(calendar) {
+                    calendar.remove();
+                });
+                // create calendar and add timeslots to it
+                var scheduler = document.getElementById('scheduler');
+                scheduler.children[0].innerHTML = data.name + " Schedule";
+                var days = ['Time'];
+                Object.values(data.sections).forEach(function(timeslot) {
+                    if (!days.includes(timeslot.day)) {
+                        days.push(timeslot.day);
+                    }
+                });
+                // sort days
+                var _days = ['Time', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                days = days.sort((a, b) => {
+                    if (a == 'Time') return -1;
+                    if (b == 'Time') return 1;
+                    return _days.indexOf(a) - _days.indexOf(b);
+                });
+                var startHour = 24;
+                Object.values(data.sections).forEach(function(timeslot) {
+                    var timeRange = timeslot.timeRange.split(' to ');
+                    var sH = parseInt(timeRange[0].split(':')[0]);
+                    if (sH < startHour) {
+                        startHour = sH;
+                    }
+                });
+                var endHour = 0;
+                Object.values(data.sections).forEach(function(timeslot) {
+                    var timeRange = timeslot.timeRange.split(' to ');
+                    var eH = parseInt(timeRange[1].split(':')[0]);
+                    if (eH > endHour) {
+                        endHour = eH;
+                    }
+                });
+                var startMinute = 0;
+                var endMinute = 0;
+
+                
+                var calendar = await createCalendar(days, startHour, endHour, startMinute, endMinute, true);
+                calendar.id = 'schedule-calendar';
+                scheduler.appendChild(calendar);
+
+                // hide overlay-create-schedule
+                document.getElementById('overlay-create-schedule').style.display = 'none';
+                document.getElementById('landing-page').style.display = 'none';
+                // show scheduler
+                document.getElementById('scheduler').style.display = 'flex';
+                
+                var tbody = calendar.querySelector('tbody');
+                Object.keys(data.sections).forEach(function(sectionNum) {
+                    var timeslot = data.sections[sectionNum];
+                    timeslot.sectionNum = sectionNum;
+                    var dayIndex = days.indexOf(timeslot.day);
+                    var timeRange = timeslot.timeRange.split(' to ');
+                    var startHour = parseInt(timeRange[0].split(':')[0]);
+                    var startMinute = parseInt(timeRange[0].split(':')[1]);
+                    var endHour = parseInt(timeRange[1].split(':')[0]);
+                    var endMinute = parseInt(timeRange[1].split(':')[1]);
+                    var startButton = tbody.querySelector('button[id="' + startHour + '-' + (dayIndex-1) + '-' + (startMinute === 30 ? '1' : '0') + '"]');
+                    var endButton = tbody.querySelector('button[id="' + endHour + '-' + (dayIndex-1) + '-' + (endMinute === 30 ? '1' : '0') + '"]');
+                    var overlay = document.createElement('div');
+                    overlay.classList.add('section-card');
+                    overlay.classList.add('section-editor');
+                    overlay.classList.add(`eventcolor_${eventcolor_idx}`);
+                    eventcolor_idx = (eventcolor_idx + 1) % 6;
+                    overlay.style.height = ((endHour - startHour) * 2 + (endMinute - startMinute) / 30) * (startButton.parentNode.clientHeight/2) + 'px';
+                    overlay.innerHTML = '<p>Section ' + timeslot.sectionNum + '<br>' + timeslot.timeRange + '</p>';
+                    // add preferences
+                    const parser = new DOMParser();
+                    var preferences = `<select class='schedule-select' name="${timeslot.sectionNum}">
+                        <option value="0 Unavailable" selected="">0 Unavailable</option>
+                        <option value="1 Do not want">1 Do not want</option>
+                        <option value="2 Only if needed">2 Only if needed</option>
+                        <option value="3 I can do it">3 I can do it</option>
+                        <option value="4 Maybe">4 Maybe</option>
+                        <option value="5 Want this time">5 Want this time</option>
+                        <option value="6 Prefer this time">6 Prefer this time</option>
+                        <option value="7 Really want this">7 Really want this</option>
+                        <option value="8 Really want most">8 Really want most</option>
+                    </select>`;
+                    var prefs = parser.parseFromString(preferences, 'text/html').body.firstChild;
+                    prefs.innerHTML = preferences;
+                    overlay.appendChild(prefs);
+                    // add choices
+                    var spanner = `<select class='schedule-select' name="${timeslot.sectionNum}span">
+                        <option value="= Entire time" selected="">= Entire time</option>
+                        <option value="+ Only first part">+ Only first part</option>
+                        <option value="- Only last part">- Only last part</option>
+                    </select>`
+                    var span = parser.parseFromString(spanner, 'text/html').body.firstChild;
+                    span.innerHTML = spanner;
+                    overlay.appendChild(span);
+                    // add a total interest counter
+                    var interest = document.createElement('p');
+                    interest.id = 'interest-' + timeslot.sectionNum;
+                    interest.innerHTML = "Availablity score: 0";
+                    interest.title = 'This is the total score for this time slot.  It is calculated by summing all the added preferences for this time slot.';
+                    overlay.appendChild(interest);
+                    // fix up startbutton
+                    startButton.innerHTML = "&nbsp;";
+                    startButton.style['align-items'] = 'flex-start';
+                    startButton.appendChild(overlay);
+                });
+                
+                // add a button to return to the overlay
+                // insert before calendar
+                if (!document.getElementById('leaveschedulebtn')) {
+                    var btndiv = document.createElement('div');
+                    btndiv.id = 'btncontainer';
+
+                    var saveButton = document.createElement('button');
+                    saveButton.id = 'saveschedulebtn';
+                    saveButton.innerHTML = "Save options";
+                    saveButton.addEventListener('click', ()=>{alert('Options are saved automatically as you change them (unless an error occurs).')})
+                    saveButton.classList.add('btn');
+                    saveButton.style.flex = '1 0 auto';
+                    btndiv.appendChild(saveButton);
+
+                    btndiv.appendChild(document.createElement('p'));
+
+                    if (window.is_admin) {
+                        var editButton = document.createElement('button');
+                        editButton.id = 'adminaddbtn';
+                        editButton.innerHTML = "Add editors";
+                        editButton.classList.add('btn');
+                        editButton.addEventListener('click', adminAddUsers, false);
+                        editButton.style.flex = '1 0 auto';
+                        btndiv.appendChild(editButton);
+
+                        btndiv.appendChild(document.createElement('p'));
+
+                        var editButton = document.createElement('button');
+                        editButton.id = 'adminrembtn';
+                        editButton.innerHTML = "Remove editors";
+                        editButton.classList.add('btn');
+                        editButton.addEventListener('click', adminRemUsers, false);
+                        editButton.style.flex = '1 0 auto';
+                        btndiv.appendChild(editButton);
+
+                        btndiv.appendChild(document.createElement('p'));
+
+                        var jsonButton = document.createElement('button');
+                        jsonButton.id = 'jsonbtn';
+                        jsonButton.innerHTML = "Download JSON";
+                        jsonButton.classList.add('btn');
+                        jsonButton.addEventListener('click', downloadJSON, false);
+                        jsonButton.style.flex = '1 0 auto';
+                        btndiv.appendChild(jsonButton);
+
+                        btndiv.appendChild(document.createElement('p'));
+                    }
+
+                    var returnButton = document.createElement('button');
+                    returnButton.id = 'leaveschedulebtn';
+                    returnButton.innerHTML = "Leave scheduler";
+                    returnButton.classList.add('btn');
+                    returnButton.addEventListener('click', returnToOverlay, false);
+                    returnButton.style.flex = '1 0 auto';
+                    btndiv.appendChild(returnButton);
+                    
+                    // insert <p> as padding
+                    var padding = document.createElement('p');
+                    padding.innerHTML = "&nbsp;";
+                    scheduler.insertBefore(btndiv, calendar);
+                    
+                    if (window.is_admin) {
+                        var link = document.createElement('p');
+                        var href = window.location.origin + window.location.pathname;
+                        link.style.textAlign = 'center';
+                        link.innerHTML = "To share this with others, give them the link below, and add them as permitted editors using the button above.<br><a target='_blank' href='" + href + "?id=" + window.schedulerID + "'>" + href + "?id=" + window.schedulerID + "</a>";            
+                        link.style.fontSize = '20px';
+                        scheduler.insertBefore(link, calendar);
+                    }
+                    scheduler.insertBefore(padding, calendar);
+                }
+
+                if (!window.viewOnly || (data.is_admin || data.is_editable))
+                    registerScheduleEventHandlers();
+
+                // change all addbtn to show "&nbsp;"
+                Array.from(document.querySelectorAll(".addbtn")).forEach(e => {
+                    if (e.innerHTML == "+")
+                        e.innerHTML = "&nbsp;";
+                })
+
+                // show the schedule link
+                document.getElementById('schedule-link').href = window.location.href + "?id=" + id;
+                document.getElementById('schedule-link').innerHTML = window.location.href + "?id=" + id;
+
+                // show the schedule title
+                document.getElementById('schedule-title').innerHTML = data.name + " Schedule";
+
+                // show the schedule description if there is one, or hide it
+                // if (data.description) {
+                document.getElementById('schedule-description').innerHTML = data.description;
+                // } else {
+                //     document.getElementById('schedule-description').innerHTML = '&nbsp;';
+                // }
+
+                // render user's availibility into select elements
+                var selects = document.querySelectorAll('.schedule-select');
+                selects.forEach(function(select) {
+                    if (select.name.includes('span')) {
+                        var sectionNum = select.name.split('span')[0];
+                        try {
+                            var userPrefs = data.sections[sectionNum].prefs[window.username];
+                        }
+                        catch(err) {
+                            var userPrefs = {"score": "0", "span": "="};
+                        }
+                        // pick the 'select' option that starts with userPrefs[0]
+                        var options = Array.from(select.children);
+                        if (userPrefs && "span" in userPrefs) {
+                            var option = options.find(o => o.value.startsWith(userPrefs["span"]));
+                            options.forEach(o => o.selected = false);
+                            option.selected = true;
+                            // change 'sectionNum' element accordingly
+                            select = document.querySelector('select[name="' + sectionNum + '"]');
+                            var options = Array.from(select.children);
+                            var option = options.find(o => o.value.startsWith(userPrefs["score"]));
+                            options.forEach(o => o.selected = false);
+                            option.selected = true;
+                        }
+                    }
+                });
+
+                // render recieved availibility scores
+                var scores = data.availability;
+                for (var key in scores) {
+                    var interestParagraph = document.getElementById('interest-' + key);
+                    interestParagraph.innerHTML = "Availablity score: " + scores[key];
+                }
+
+                if (!(data.is_admin || data.is_editable)) {
+                    alert("You are in view-only mode.  You can view the schedule, but you cannot make any changes.  Ask the schedule creator for edit access.")
+                }
+            }).catch(error => {
+                alert("There was an error retrieving the schedule.  Make sure the ID is correct and that the schedule was created.");
+                console.error(error);
+            });
+    }
+
+    function downloadJSON() {
+        // convert received JSON to a downloadable file
+        window.schedulerData.id = window.schedulerID;
+        window.schedulerData.description = document.getElementById('schedule-description').innerHTML;
+        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(window.schedulerData, null, 2));
+        var downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", window.schedulerID + ".json");
+        document.body.appendChild(downloadAnchorNode); // required for firefox
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    }
+
+    // End scheduler-specific functions
+    function returnToOverlay() {
+        document.getElementById('overlay-create-schedule').style.display = 'none';
+        document.getElementById('ocs-start').style.display = 'flex';
+        document.getElementById('scheduler').style.display = 'none';
+        document.getElementById('ocs-calendar').style.display = 'none';
+        document.getElementById('landing-page').style.display = 'flex';
+    }
+    function switchTheme() {
+        if (localStorage.darkmode == "true") {
+            localStorage.darkmode = "false";
+        }
+        else {
+            localStorage.darkmode = "true";
+        }
+        document.documentElement.setAttribute("theme", localStorage.darkmode == "true" ? "dark" : "light");
+    }
+    document.documentElement.setAttribute("theme", localStorage.darkmode == "true" ? "dark" : "light");
+    window.onload = () => {
+        window.username = `<!--#echo var="REMOTE_USER" -->`;
+        document.querySelector('#createschedulebtn').addEventListener('click', openCreateSchedule);
+        document.querySelector('#createschedule').addEventListener('keydown', (e)=>{if(e.key=='Enter') openCreateSchedule()});
+        document.querySelector('#joinschedulebtn').addEventListener('click', retrieveAndRenderSchedule);
+        document.querySelector('#joinschedule').addEventListener('keydown', (e)=>{if(e.key=='Enter') retrieveAndRenderSchedule()});
+        document.querySelector('#ocs-start-ampm').addEventListener('click', flipAMPM);
+        document.querySelector('#ocs-end-ampm').addEventListener('click', flipAMPM);
+        document.querySelector('#ocs-create-btn').addEventListener('click', createSchedule);
+        document.querySelector('#ocs-back-btn').addEventListener('click', returnToCreateSchedule);
+        document.querySelector('#ocs-save-btn').addEventListener('click', submitSchedule);
+        Array.from(document.querySelectorAll('.ocs-cancel-btn')).forEach(e => e.addEventListener('click', returnToOverlay));
+        window.viewOnly = false;
+        if (window.location.search.includes('id=')) {
+            var id = window.location.search.split('id=')[1].split('&')[0];
+            document.getElementById('joinschedule').value = id;
+            if (window.location.search.includes('viewas=')) {
+                var viewas = window.location.search.split('viewas=')[1];
+                // view as username that is not window.username
+                window.username = viewas;
+                window.viewOnly = true;
+            }
+            retrieveAndRenderSchedule();
+        }
+    }
+</script>
+</html>
