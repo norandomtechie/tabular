@@ -23,7 +23,7 @@ from wsgidefs import *
 
 def authentication(app):
     def middleware(env, sr):
-        if env.get('REMOTE_USER', '') != '':
+        if env.get('REMOTE_USER', '').replace('@purdue.edu', '') != '':
             return app(env, sr)
         else:
             return ret_401(sr, "Unauthorized")
@@ -76,7 +76,7 @@ def validate_request(app):
 def scheduler_api_get(app):
     def middleware(env, sr):
         if env['REQUEST_METHOD'] == 'GET':
-            user = env.get('REMOTE_USER', '')
+            user = env.get('REMOTE_USER', '').replace('@purdue.edu', '')
             query = {k:v for k, v in [x.split('=') for x in env['QUERY_STRING'].split('&')]}
             if 'id' in query:
                 try:
@@ -110,9 +110,9 @@ def scheduler_api_get(app):
 def scheduler_api_post(app):
     def middleware(env, sr):
         if env['REQUEST_METHOD'] == 'POST':
-            user = env.get('REMOTE_USER', '')
+            user = env.get('REMOTE_USER', '').replace('@purdue.edu', '')
             body = json.loads(env['wsgi.input'].read(int(env.get('CONTENT_LENGTH', 0))))
-            sys.stderr.write('body: ' + str('addedit' in body) + '\n')
+            # sys.stderr.write('body: ' + str('addedit' in body) + '\n')
             if 'id' in body:
                 # fetch from redis
                 scheduler = from_json(json.loads(rds.get("scheduler:" + body['id']).decode('utf8')))
