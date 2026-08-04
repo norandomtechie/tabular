@@ -937,7 +937,7 @@ video {
     flex-direction: row;
     align-items: center;
     justify-content: space-evenly;
-    width: max-content;
+    width: 50%;
     height: 4vh;
 }
 
@@ -967,6 +967,85 @@ video {
 }
 .removebtn:hover {
     opacity: 0.5;
+}
+
+/* Direct assignment mode */
+.direct-occ-text, .direct-roster {
+    font-size: 12px!important;
+    opacity: 0.85;
+    text-align: center;
+    margin: 2px 0;
+    width: 92%;
+    word-wrap: break-word;
+}
+.direct-btns {
+    display: flex;
+    flex-direction: column;
+    width: 92%;
+    gap: 3px;
+    margin: 3px 0;
+}
+.direct-join-btn {
+    font-family: 'Heebo';
+    font-size: 13px;
+    padding: 3px 4px;
+    cursor: pointer;
+    border: 1px solid var(--softer-btn-border);
+    background-color: var(--btn-color);
+    color: var(--text-color);
+    transition: all 0.15s;
+}
+.direct-join-btn:hover:not(:disabled):not(.direct-active) {
+    background-color: var(--boiler-up-bg-hover);
+}
+.direct-join-btn.direct-active {
+    background-color: var(--boiler-up);
+    color: var(--base-color);
+    font-weight: bold;
+    border-color: var(--boiler-up);
+}
+/* "crossed lines" over an option once that half of the section is full */
+.direct-join-btn.direct-full:not(.direct-active) {
+    background-image: repeating-linear-gradient(
+        45deg,
+        var(--disabled-text-color) 0,
+        var(--disabled-text-color) 2px,
+        transparent 2px,
+        transparent 9px
+    );
+}
+.direct-join-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+.direct-capacity-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 12px!important;
+    margin-top: 2px;
+    color: var(--text-color);
+}
+.direct-capacity-row input {
+    width: 42px!important;
+    height: 2.4vh!important;
+    font-size: 12px!important;
+    padding: 2px!important;
+    text-align: center;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--softer-btn-border);
+}
+#direct-min-banner {
+    font-size: 20px;
+    margin: 4px 0 12px 0;
+    text-align: center;
+    width: 90%;
+}
+#direct-min-banner.direct-banner-warning {
+    color: var(--boiler-up-coloredemphasis);
+    font-weight: bold;
 }
 
 :root {

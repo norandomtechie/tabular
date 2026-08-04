@@ -90,6 +90,31 @@
             </div>
 
             <div class="row" style="justify-content: space-between; width: 90%">
+                <h2 id="ocs-desc">How should students provide availability?</h2>
+                <div class="row" style="width: auto; flex-wrap: wrap; max-width: 60%; margin: 1vh 0">
+                    <label class="checkcontainer"><span class="checktext">Preference-based</span>
+                        <input type="radio" name="assignmode" value="preference" checked="true">
+                        <span class="checkbtn"></span>
+                    </label>
+                    <label class="checkcontainer"><span class="checktext">Direct assignment</span>
+                        <input type="radio" name="assignmode" value="direct">
+                        <span class="checkbtn"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="row" id="ocs-direct-options" style="justify-content: space-between; width: 90%; display: none">
+                <h2 id="ocs-desc">Direct assignment settings</h2>
+                <div class="row" style="width: auto; flex-wrap: wrap; max-width: 60%; margin: 1vh 0">
+                    <p style="font-size: 18px!important">Min. sections/student</p>
+                    <input class="ocs-time" type="number" id="ocs-min-sections" value="3" min="0">
+                    <p>&nbsp;</p>
+                    <p style="font-size: 18px!important">Default capacity/section</p>
+                    <input class="ocs-time" type="number" id="ocs-default-capacity" value="5" min="1">
+                </div>
+            </div>
+
+            <div class="row" style="justify-content: space-between; width: 90%">
                 <h2 id="ocs-desc">Select time slots for schedule<br><em style="font-size: 16px">(All times are in the Eastern Time Zone.)</em></h2>
                 <div class="row" style="width: auto; flex-wrap: wrap; max-width: 60%; margin: 1vh 0">
                     <input class="ocs-time" type="number" id="ocs-start-hour" value="7">
@@ -126,6 +151,7 @@
     <div class="container" id="scheduler">
         <h1 id="schedule-title">(title) Schedule</h1>
         <h2 id="schedule-description">(description)</h2>
+        <p id="direct-min-banner" style="display: none"></p>
         <p style="display: none">To share this with others, give them <a id="schedule-link" href="?schedule=(id)">this link</a>.</p>
     </div>
 </body>
@@ -216,7 +242,13 @@
     }
     async function createSchedule() {
         var calendar = document.getElementById('ocs-calendar');
-        
+
+        // capture the assignment mode chosen in step 1
+        var modeInput = document.querySelector('input[name="assignmode"]:checked');
+        window.scheduleMode = modeInput ? modeInput.value : 'preference';
+        window.scheduleMinSections = parseInt(document.getElementById('ocs-min-sections').value) || 0;
+        window.scheduleDefaultCapacity = parseInt(document.getElementById('ocs-default-capacity').value) || 5;
+
         // Get the start and end time values
         var startHour = parseInt(document.getElementById('ocs-start-hour').value);
         var startMinute = 0;
@@ -333,6 +365,11 @@
         removebtn.addEventListener('click', removeTimeSlot, false);
         window.timeSlotOverlay.appendChild(removebtn);
         window.timeSlotOverlay.sectionNum = secnum;
+        if (window.scheduleMode === 'direct') {
+            var capPrompt = prompt("Enter the max number of TAs (capacity) for Section " + secnum + ".", window.scheduleDefaultCapacity || 5);
+            var cap = parseInt(capPrompt);
+            window.timeSlotOverlay.capacity = (!isNaN(cap) && cap > 0) ? cap : (window.scheduleDefaultCapacity || 5);
+        }
         window.timeSlotOverlay.day = document.querySelector('.calendar').querySelector('th:nth-child(' + (2 + parseInt(btn.id.split('-')[1])) + ')').innerHTML
         window.timeSlotOverlay.timeRange = window.timeSlotOverlay.innerHTML.split('<br>')[1].split(' - ')[0] + ' to ' + window.timeSlotOverlay.innerHTML.split('<br>')[1].split(" - ")[1].split("</p>")[0];
         // set background color to --waiter-bg-0 to --waiter-bg-5, depending on how many timeslots have been created so far
@@ -353,6 +390,189 @@
         window.timeSlotOverlays = window.timeSlotOverlays.filter(o => o != event.currentTarget.parentElement);
         event.currentTarget.remove();
     }
+
+    // ==================== Direct assignment mode ====================
+    var DIRECT_SPAN_LABELS = {'=': 'Full section', '+': 'First half', '-': 'Second half'};
+
+    // build the interactive card content for a direct-assignment section.
+    // occ may be null (freshly created schedule, nobody signed up yet).
+    function buildDirectSectionCard(overlay, sectionNum, capacity, occ, signups, canEdit, isAdmin) {
+        signups = signups || {};
+
+        var occText = document.createElement('p');
+        occText.className = 'direct-occ-text';
+        occText.id = 'occ-text-' + sectionNum;
+        overlay.appendChild(occText);
+
+        var btnRow = document.createElement('div');
+        btnRow.className = 'direct-btns';
+        ['=', '+', '-'].forEach(function(span) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'direct-join-btn';
+            btn.dataset.section = sectionNum;
+            btn.dataset.span = span;
+            btn.dataset.canEdit = canEdit ? 'true' : 'false';
+            if (canEdit) {
+                btn.addEventListener('click', handleDirectJoinClick);
+            } else {
+                btn.disabled = true;
+            }
+            btnRow.appendChild(btn);
+        });
+        overlay.appendChild(btnRow);
+
+        var roster = document.createElement('p');
+        roster.className = 'direct-roster';
+        roster.id = 'roster-' + sectionNum;
+        overlay.appendChild(roster);
+
+        if (isAdmin) {
+            var capRow = document.createElement('div');
+            capRow.className = 'direct-capacity-row';
+            var capLabel = document.createElement('span');
+            capLabel.innerHTML = 'Capacity:';
+            capRow.appendChild(capLabel);
+            var capInput = document.createElement('input');
+            capInput.type = 'number';
+            capInput.min = '1';
+            capInput.value = capacity;
+            capInput.dataset.section = sectionNum;
+            capInput.addEventListener('change', handleCapacityInputChange);
+            capRow.appendChild(capInput);
+            overlay.appendChild(capRow);
+        }
+
+        applyOccupancy(sectionNum, capacity, occ, signups);
+    }
+
+    // update an already-built card's occupancy text, button states, and roster.
+    // used both for the initial paint and after every refresh.
+    function applyOccupancy(sectionNum, capacity, occ, signups) {
+        occ = occ || {firstOccupied: 0, secondOccupied: 0, firstOpen: true, secondOpen: true, fullOpen: true};
+        signups = signups || {};
+
+        var text = document.getElementById('occ-text-' + sectionNum);
+        if (text) {
+            text.innerHTML = 'First half: ' + occ.firstOccupied + '/' + capacity + ' &middot; Second half: ' + occ.secondOccupied + '/' + capacity;
+        }
+
+        var mine = signups[window.username];
+        var holdsAny = !!mine;
+        ['=', '+', '-'].forEach(function(span) {
+            var btn = document.querySelector('.direct-join-btn[data-section="' + sectionNum + '"][data-span="' + span + '"]');
+            if (!btn) return;
+            var isMineSpan = !!(mine && mine.span === span);
+            var open = span == '=' ? occ.fullOpen : (span == '+' ? occ.firstOpen : occ.secondOpen);
+            btn.classList.toggle('direct-active', isMineSpan);
+            btn.classList.toggle('direct-full', !open && !isMineSpan);
+            if (btn.dataset.canEdit === 'true') {
+                btn.disabled = !open && !holdsAny;
+            }
+            btn.innerHTML = isMineSpan ? ('&#10003; ' + DIRECT_SPAN_LABELS[span] + ' (yours — click to leave)')
+                : (!open ? (DIRECT_SPAN_LABELS[span] + ' — full') : ('+ ' + DIRECT_SPAN_LABELS[span]));
+        });
+
+        var roster = document.getElementById('roster-' + sectionNum);
+        if (roster) {
+            var names = Object.keys(signups);
+            roster.innerHTML = names.length
+                ? ('Signed up: ' + names.map(function(u) { return u + ' (' + DIRECT_SPAN_LABELS[signups[u].span] + ')'; }).join(', '))
+                : 'No one signed up yet.';
+        }
+    }
+
+    async function handleDirectJoinClick(event) {
+        var btn = event.currentTarget;
+        var section = btn.dataset.section;
+        var span = btn.dataset.span;
+        var join = !btn.classList.contains('direct-active');
+        var allBtns = document.querySelectorAll('.direct-join-btn[data-section="' + section + '"]');
+        allBtns.forEach(function(b) { b.disabled = true; });
+        try {
+            var r = await fetch('api.wsgi?id=' + window.schedulerID, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id: window.schedulerID, signup: {section: section, span: span, join: join}})
+            });
+            if (r.status != 200) {
+                var msg = await r.text();
+                alert(msg || "That option isn't available anymore. Someone may have just taken it.");
+            }
+        } catch (err) {
+            alert("There was an error updating your signup. Please try again.");
+            console.error(err);
+        }
+        await refreshDirectOccupancy();
+    }
+
+    async function handleCapacityInputChange(event) {
+        var input = event.currentTarget;
+        var section = input.dataset.section;
+        var value = parseInt(input.value);
+        if (isNaN(value) || value < 1) {
+            alert("Capacity must be a positive number.");
+            await refreshDirectOccupancy();
+            return;
+        }
+        try {
+            var r = await fetch('api.wsgi?id=' + window.schedulerID, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id: window.schedulerID, setCapacity: {section: section, value: value}})
+            });
+            if (r.status != 200) {
+                alert("There was an error updating the capacity.");
+            }
+        } catch (err) {
+            alert("There was an error updating the capacity.");
+            console.error(err);
+        }
+        await refreshDirectOccupancy();
+    }
+
+    // re-fetch the scheduler and re-paint occupancy/roster/banner everywhere.
+    // used after every join/leave/capacity change so concurrent signups from
+    // other students (first-come-first-serve) are always reflected accurately.
+    async function refreshDirectOccupancy() {
+        if (!window.schedulerID) return;
+        var r = await fetch('api.wsgi?id=' + window.schedulerID);
+        if (r.status != 200) return;
+        var data = await r.json();
+        window.schedulerData = data;
+        Object.keys(data.sections).forEach(function(sectionNum) {
+            var section = data.sections[sectionNum];
+            var occ = data.occupancy && data.occupancy[sectionNum];
+            applyOccupancy(sectionNum, section.capacity, occ, section.signups || {});
+        });
+        updateMinSectionsBanner(data);
+    }
+
+    function updateMinSectionsBanner(data) {
+        var banner = document.getElementById('direct-min-banner');
+        if (!banner) return;
+        if (!data || data.mode !== 'direct') {
+            banner.style.display = 'none';
+            return;
+        }
+        var min = data.minSections || 0;
+        var count = data.userSectionCount;
+        if (count === undefined || count === null) {
+            count = Object.values(data.sections).filter(function(s) {
+                return s.signups && (window.username in s.signups);
+            }).length;
+        }
+        banner.style.display = 'block';
+        if (count < min) {
+            banner.innerHTML = "You've signed up for " + count + " of the recommended " + min + " section" + (min == 1 ? '' : 's') + ". We recommend signing up for at least " + min + " if possible.";
+            banner.classList.add('direct-banner-warning');
+        } else {
+            banner.innerHTML = "You've signed up for " + count + " section" + (count == 1 ? '' : 's') + ".";
+            banner.classList.remove('direct-banner-warning');
+        }
+    }
+    // ==================== End direct assignment mode ====================
+
     async function submitSchedule(days, startHour, endHour, startMinute=0, endMinute=0) {
         // there should have been at least one created timeslot
         if (!window.timeSlotOverlays) {
@@ -370,13 +590,14 @@
             return {
                 sectionNum: o.sectionNum,
                 day: o.day,
-                timeRange: o.timeRange
+                timeRange: o.timeRange,
+                capacity: o.capacity
             }
         });
         // combine timeslots from {'sectionNum': 'N', day: 'D', timeRange: 'X to Y'} to one dictionary with 'sectionNum': ['N', 'D', 'X to Y'] for each timeslot
         var timeslots = timeslots.reduce((acc, val) => {
             if (!acc[val.sectionNum]) {
-                acc[val.sectionNum] = [val.day, val.timeRange];
+                acc[val.sectionNum] = (window.scheduleMode === 'direct') ? [val.day, val.timeRange, val.capacity] : [val.day, val.timeRange];
             }
             else {
                 alert("Error: multiple timeslots with the same section number.  Impossible error.");
@@ -435,7 +656,8 @@
                 name: document.getElementById('createschedule').value,
                 description: document.getElementById('createscheduledesc').value,
                 sections: timeslots,
-                users: [window.username]
+                users: [window.username],
+                options: (window.scheduleMode === 'direct') ? {mode: 'direct', minSections: window.scheduleMinSections} : {mode: 'preference'}
             })
         });
         if (r.status != 200) {
@@ -494,7 +716,10 @@
             eventcolor_idx = (eventcolor_idx + 1) % 6;
             overlay.style.height = ((endHour - startHour) * 2 + (endMinute - startMinute) / 30) * (startButton.parentNode.clientHeight/2) + 'px';
             overlay.innerHTML = '<p>Section ' + timeslot.sectionNum + '<br>' + timeslot.timeRange + '</p>';
-            
+
+            if (window.scheduleMode === 'direct') {
+                buildDirectSectionCard(overlay, timeslot.sectionNum, timeslot.capacity, null, {}, true, true);
+            } else {
             // add preferences
             const parser = new DOMParser();
             var preferences = `<select class='schedule-select' name="${timeslot.sectionNum}">
@@ -528,12 +753,17 @@
             interest.innerHTML = "Availablity score: 0";
             interest.title = 'This is the total score for this time slot.  It is calculated by summing all the added preferences for this time slot.';
             overlay.appendChild(interest);
-            
+            }
+
             // fix up startbutton
             startButton.innerHTML = "&nbsp;";
             startButton.style['align-items'] = 'flex-start';
             startButton.appendChild(overlay);
         });
+
+        if (window.scheduleMode === 'direct') {
+            updateMinSectionsBanner({mode: 'direct', minSections: window.scheduleMinSections, userSectionCount: 0, sections: {}});
+        }
 
         // add a button to return to the overlay
         // insert before calendar
@@ -832,6 +1062,10 @@
                     eventcolor_idx = (eventcolor_idx + 1) % 6;
                     overlay.style.height = ((endHour - startHour) * 2 + (endMinute - startMinute) / 30) * (startButton.parentNode.clientHeight/2) + 'px';
                     overlay.innerHTML = '<p>Section ' + timeslot.sectionNum + '<br>' + timeslot.timeRange + '</p>';
+                    if (data.mode === 'direct') {
+                        var occ = data.occupancy && data.occupancy[sectionNum];
+                        buildDirectSectionCard(overlay, sectionNum, timeslot.capacity, occ, timeslot.signups || {}, (data.is_admin || data.is_editable), data.is_admin);
+                    } else {
                     // add preferences
                     const parser = new DOMParser();
                     var preferences = `<select class='schedule-select' name="${timeslot.sectionNum}">
@@ -863,6 +1097,7 @@
                     interest.innerHTML = "Availablity score: 0";
                     interest.title = 'This is the total score for this time slot.  It is calculated by summing all the added preferences for this time slot.';
                     overlay.appendChild(interest);
+                    }
                     // fix up startbutton
                     startButton.innerHTML = "&nbsp;";
                     startButton.style['align-items'] = 'flex-start';
@@ -964,6 +1199,9 @@
                 //     document.getElementById('schedule-description').innerHTML = '&nbsp;';
                 // }
 
+                if (data.mode === 'direct') {
+                    updateMinSectionsBanner(data);
+                } else {
                 // render user's availibility into select elements
                 var selects = document.querySelectorAll('.schedule-select');
                 selects.forEach(function(select) {
@@ -996,6 +1234,7 @@
                 for (var key in scores) {
                     var interestParagraph = document.getElementById('interest-' + key);
                     interestParagraph.innerHTML = "Availablity score: " + scores[key];
+                }
                 }
 
                 if (!(data.is_admin || data.is_editable)) {
@@ -1050,6 +1289,9 @@
         document.querySelector('#ocs-back-btn').addEventListener('click', returnToCreateSchedule);
         document.querySelector('#ocs-save-btn').addEventListener('click', submitSchedule);
         Array.from(document.querySelectorAll('.ocs-cancel-btn')).forEach(e => e.addEventListener('click', returnToOverlay));
+        Array.from(document.querySelectorAll('input[name="assignmode"]')).forEach(e => e.addEventListener('change', function() {
+            document.getElementById('ocs-direct-options').style.display = (this.value === 'direct') ? 'flex' : 'none';
+        }));
         window.viewOnly = false;
         if (window.location.search.includes('id=')) {
             var id = window.location.search.split('id=')[1].split('&')[0];

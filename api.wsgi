@@ -33,10 +33,12 @@ def authentication(app):
 """
 GET /scheduler/?id=<id> - get scheduler with id, check if user is in users, return 400 if not, return JSON of scheduler if so
 POST /scheduler/?name=<name> - create a new scheduler, return 400 if user is not in users or data is not expected, return 200 if successful
-    - data saved should be JSON of scheduler, with name, description, sections, users
+    - data saved should be JSON of scheduler, with name, description, sections, users, and optionally options
     - return ID of scheduler
 POST /scheduler/?id=<id> - updates properties of the scheduler JSON, return 400 if user is not in users or data is not expected, return 200 if successful
-    - data should be ["timeslot1": (N, '=/+/-'), "timeslot2": (N, '=/+/-'), ...]
+    - preference mode: data should be {"timeslots": {"sectionN1": [N1, '=/+/-'], ...}}
+    - direct-assignment mode: data should be {"signup": {"section": sectionNum, "span": "=/+/-", "join": bool}}
+      - joins/leaves are applied with an atomic check against that section/half's capacity (first-come-first-serve)
     - save under "users" under respective section under "sections"
 
 - Redis key: scheduler:\<scheduler_id\> (UUID)
@@ -47,18 +49,23 @@ POST /scheduler/?id=<id> - updates properties of the scheduler JSON, return 400 
         - section number: dict
             - day: string
             - time range: tuple[string, string]
-            - prefs: list
+            - prefs: dict (preference mode)
                 - user: dict key
                     - score: int
                     - span: char ('=', '+', '-')
+            - signups: dict (direct-assignment mode)
+                - user: dict key
+                    - span: char ('=', '+', '-')
+            - capacity: int (direct-assignment mode, per-section max headcount per half)
     - limit (number of people per section): int
     - options: object
-        - ac-sections: bool
+        - mode: 'preference' (default) or 'direct'
+        - minSections: int (direct-assignment mode, recommended minimum sections/student)
     - users
         - visitable: list [string, ...]
         - editable: list [string, ...]
         - admin: list [string, ...]
-    
+
 """
 
 def validate_request(app):
@@ -87,8 +94,10 @@ def scheduler_api_get(app):
                 # all_users = reduce(lambda x, y: x+y, [scheduler.users[k] for k in scheduler.users], [])
                 # if user in all_users:
                 scheduler_json = scheduler.to_json()
-                # remove others prefs if user is not admin
-                if user not in scheduler.users['admin']:
+                direct = scheduler.options.get('mode') == 'direct'
+                # remove others prefs if user is not admin (preference mode only -
+                # direct-assignment signups are shown to everyone with access, like a shared sign-up sheet)
+                if user not in scheduler.users['admin'] and not direct:
                     for section in scheduler_json['sections']:
                         if user in scheduler_json['sections'][section]['prefs']:
                             scheduler_json['sections'][section]['prefs'] = {user: scheduler_json['sections'][section]['prefs'][user]}
@@ -96,6 +105,10 @@ def scheduler_api_get(app):
                             scheduler_json['sections'][section]['prefs'] = {user: {'score': 0, 'span': '='}}
                 # add availability
                 scheduler_json['availability'] = scheduler.compute_availability()
+                scheduler_json['occupancy'] = scheduler.compute_occupancy()
+                scheduler_json['mode'] = scheduler.options.get('mode', 'preference')
+                scheduler_json['minSections'] = scheduler.options.get('minSections', 3)
+                scheduler_json['userSectionCount'] = scheduler.user_section_count(user)
                 scheduler_json['is_admin'] = user in scheduler.users['admin']
                 scheduler_json['is_editable'] = user in scheduler.users['editable']
                 return ret_ok(sr, json.dumps(scheduler_json))
@@ -141,6 +154,8 @@ def scheduler_api_post(app):
                 elif 'timeslots' in body:
                     # expected format: {"sectionN2": ['N1', '=/+/-'], "sectionN2": ['N2', '=/+/-'], ...}
                     # can only update user's own prefs
+                    if scheduler.options.get('mode') == 'direct':
+                        return ret_400(sr, "This scheduler uses direct assignment; use 'signup' instead")
                     if user not in scheduler.users['editable']:
                         return ret_403(sr, "You are not allowed to edit")
                     for s in body['timeslots']:
@@ -151,6 +166,73 @@ def scheduler_api_post(app):
                         scheduler.sections[section_num]['prefs'][user] = {'score': prefnum, 'span': prefspan}
                     rds.set("scheduler:" + body['id'], json.dumps(scheduler.to_json()))
                     return ret_ok(sr, json.dumps(scheduler.compute_availability()))
+                elif 'signup' in body:
+                    # direct-assignment mode: first-come-first-serve join/leave of a section (or half of one)
+                    # expected format: {"section": sectionNum, "span": "=/+/-", "join": bool}
+                    if scheduler.options.get('mode') != 'direct':
+                        return ret_400(sr, "This scheduler does not use direct assignment")
+                    if user not in scheduler.users['editable']:
+                        return ret_403(sr, "You are not allowed to edit")
+                    signup = body['signup']
+                    section_num = str(signup.get('section', ''))
+                    span = signup.get('span', '=')
+                    join = bool(signup.get('join', True))
+                    if section_num not in scheduler.sections or span not in ('=', '+', '-'):
+                        return ret_400(sr, "Invalid section or span")
+                    # atomic check-and-set so two students can't both grab the last spot at once
+                    key = "scheduler:" + body['id']
+                    with rds.pipeline() as pipe:
+                        while True:
+                            pipe.watch(key)
+                            cur = from_json(json.loads(pipe.get(key).decode('utf8')))
+                            signups = cur.sections[section_num].setdefault('signups', {})
+                            signups.pop(user, None)
+                            if join:
+                                occ = cur.section_occupancy(section_num)
+                                allowed = {'=': occ['fullOpen'], '+': occ['firstOpen'], '-': occ['secondOpen']}[span]
+                                if not allowed:
+                                    pipe.reset()
+                                    return ret_400(sr, "That section/time is already full")
+                                signups[user] = {'span': span}
+                            pipe.multi()
+                            pipe.set(key, json.dumps(cur.to_json()))
+                            try:
+                                pipe.execute()
+                                break
+                            except redis.WatchError:
+                                continue
+                    return ret_ok(sr, json.dumps({
+                        "occupancy": cur.compute_occupancy(),
+                        "userSectionCount": cur.user_section_count(user)
+                    }))
+                elif 'setCapacity' in body:
+                    # direct-assignment mode, admin-only: change a section's per-half headcount cap
+                    # expected format: {"section": sectionNum, "value": int}
+                    if user not in scheduler.users['admin']:
+                        return ret_403(sr, "You are not admin")
+                    section_num = str(body['setCapacity'].get('section', ''))
+                    try:
+                        value = int(body['setCapacity'].get('value'))
+                    except (TypeError, ValueError):
+                        return ret_400(sr, "Invalid capacity value")
+                    if section_num not in scheduler.sections or value < 1:
+                        return ret_400(sr, "Invalid request")
+                    scheduler.sections[section_num]['capacity'] = value
+                    rds.set("scheduler:" + body['id'], json.dumps(scheduler.to_json()))
+                    return ret_ok(sr, json.dumps(scheduler.compute_occupancy()))
+                elif 'setMinSections' in body:
+                    # direct-assignment mode, admin-only: change the recommended minimum sections/student
+                    if user not in scheduler.users['admin']:
+                        return ret_403(sr, "You are not admin")
+                    try:
+                        value = int(body['setMinSections'])
+                    except (TypeError, ValueError):
+                        return ret_400(sr, "Invalid value")
+                    if value < 0:
+                        return ret_400(sr, "Invalid value")
+                    scheduler.options['minSections'] = value
+                    rds.set("scheduler:" + body['id'], json.dumps(scheduler.to_json()))
+                    return ret_ok(sr, "Updated minimum sections to " + str(value))
                 else:
                     return ret_400(sr, "Invalid request")
             elif 'name' in body and 'description' in body and 'sections' in body:
@@ -158,7 +240,17 @@ def scheduler_api_post(app):
                 users = {"admin": [user], "editable": [user], "visitable": [user]}
                 if not re.match(NAME_RGX, body['name']):
                     return ret_400(sr, "Invalid name")
-                scheduler = Scheduler(body['name'], body['description'], body['sections'], users)
+                options = body.get('options', {}) or {}
+                if options.get('mode') not in (None, 'preference', 'direct'):
+                    return ret_400(sr, "Invalid mode")
+                if options.get('mode') == 'direct':
+                    try:
+                        options['minSections'] = int(options.get('minSections', 3))
+                    except (TypeError, ValueError):
+                        return ret_400(sr, "Invalid minSections")
+                    if options['minSections'] < 0:
+                        return ret_400(sr, "Invalid minSections")
+                scheduler = Scheduler(body['name'], body['description'], body['sections'], users, options=options)
                 rds.set("scheduler:" + scheduler.id, json.dumps(scheduler.to_json()))
                 return ret_ok(sr, scheduler.id)
         return app(env, sr)
