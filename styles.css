@@ -824,6 +824,10 @@ video {
     align-items: center;
     cursor: auto;
     transition: all 0.1s;
+    /* section-cards live inside a disabled .addbtn button (kept for layout positioning);
+       disabled buttons suppress pointer events for their whole subtree by default, so
+       re-enable it explicitly for the card and everything inside it */
+    pointer-events: auto;
 }
 .section-card p {
     font-size: 20px;
@@ -970,7 +974,7 @@ video {
 }
 
 /* Direct assignment mode */
-.direct-occ-text, .direct-roster {
+.direct-occ-text {
     font-size: 12px!important;
     opacity: 0.85;
     text-align: center;
@@ -978,22 +982,45 @@ video {
     width: 92%;
     word-wrap: break-word;
 }
+.direct-roster-link {
+    font-size: 12px!important;
+    text-align: center;
+    margin: 0 0 3px 0;
+    cursor: pointer;
+    color: var(--boiler-up-text);
+    text-decoration: underline;
+}
+.direct-roster-link:hover {
+    color: var(--boiler-up-coloredemphasis);
+}
 .direct-btns {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: center;
     width: 92%;
-    gap: 3px;
+    gap: 4px;
     margin: 3px 0;
 }
 .direct-join-btn {
     font-family: 'Heebo';
-    font-size: 13px;
-    padding: 3px 4px;
+    font-size: 16px;
+    height: 6vh;
+    line-height: 1.1;
+    padding: 4px;
     cursor: pointer;
     border: 1px solid var(--softer-btn-border);
     background-color: var(--btn-color);
     color: var(--text-color);
     transition: all 0.15s;
+    flex: 1 1 0;
+    min-width: 0;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    white-space: normal;
+    word-break: break-word;
 }
 .direct-join-btn:hover:not(:disabled):not(.direct-active) {
     background-color: var(--boiler-up-bg-hover);

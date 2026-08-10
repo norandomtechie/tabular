@@ -396,7 +396,7 @@
 
     // build the interactive card content for a direct-assignment section.
     // occ may be null (freshly created schedule, nobody signed up yet).
-    function buildDirectSectionCard(overlay, sectionNum, capacity, occ, signups, canEdit, isAdmin) {
+    function buildDirectSectionCard(overlay, sectionNum, capacity, occ, signups, canEdit, isAdmin, label) {
         signups = signups || {};
 
         var occText = document.createElement('p');
@@ -410,6 +410,17 @@
             var btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'direct-join-btn';
+            switch (span) {
+                case '=': 
+                    btn.innerText = 'Join whole section';
+                    break;
+                case '+':
+                    btn.innerText = 'Join first half';
+                    break;
+                case '-':
+                    btn.innerText = 'Join second half';
+                    break;
+            }
             btn.dataset.section = sectionNum;
             btn.dataset.span = span;
             btn.dataset.canEdit = canEdit ? 'true' : 'false';
@@ -422,10 +433,13 @@
         });
         overlay.appendChild(btnRow);
 
-        var roster = document.createElement('p');
-        roster.className = 'direct-roster';
-        roster.id = 'roster-' + sectionNum;
-        overlay.appendChild(roster);
+        var rosterLink = document.createElement('span');
+        rosterLink.className = 'direct-roster-link';
+        rosterLink.textContent = 'View sign-ups';
+        rosterLink.dataset.section = sectionNum;
+        rosterLink.dataset.label = label || '';
+        rosterLink.addEventListener('click', handleShowRosterClick);
+        overlay.appendChild(rosterLink);
 
         if (isAdmin) {
             var capRow = document.createElement('div');
@@ -452,6 +466,10 @@
         occ = occ || {firstOccupied: 0, secondOccupied: 0, firstOpen: true, secondOpen: true, fullOpen: true};
         signups = signups || {};
 
+        // keep a live copy so the "View sign-ups" alert always reflects the latest state
+        window.directSignupsCache = window.directSignupsCache || {};
+        window.directSignupsCache[sectionNum] = signups;
+
         var text = document.getElementById('occ-text-' + sectionNum);
         if (text) {
             text.innerHTML = 'First half: ' + occ.firstOccupied + '/' + capacity + ' &middot; Second half: ' + occ.secondOccupied + '/' + capacity;
@@ -469,17 +487,31 @@
             if (btn.dataset.canEdit === 'true') {
                 btn.disabled = !open && !holdsAny;
             }
-            btn.innerHTML = isMineSpan ? ('&#10003; ' + DIRECT_SPAN_LABELS[span] + ' (yours — click to leave)')
-                : (!open ? (DIRECT_SPAN_LABELS[span] + ' — full') : ('+ ' + DIRECT_SPAN_LABELS[span]));
+            btn.innerHTML = isMineSpan ? ('&#10003; ' + DIRECT_SPAN_LABELS[span] + ' (yours)')
+                : (!open ? (DIRECT_SPAN_LABELS[span] + ' (full)') : ('+ ' + DIRECT_SPAN_LABELS[span]));
         });
+    }
 
-        var roster = document.getElementById('roster-' + sectionNum);
-        if (roster) {
-            var names = Object.keys(signups);
-            roster.innerHTML = names.length
-                ? ('Signed up: ' + names.map(function(u) { return u + ' (' + DIRECT_SPAN_LABELS[signups[u].span] + ')'; }).join(', '))
-                : 'No one signed up yet.';
-        }
+    // build the "Whole / First half / Second half" breakdown text for one section's sign-ups
+    function formatSectionRoster(sectionNum, label) {
+        var signups = (window.directSignupsCache && window.directSignupsCache[sectionNum]) || {};
+        var whole = [], first = [], second = [];
+        Object.keys(signups).sort().forEach(function(u) {
+            var span = signups[u].span;
+            if (span === '=') whole.push(u);
+            else if (span === '+') first.push(u);
+            else if (span === '-') second.push(u);
+        });
+        var fmt = function(arr) { return arr.length ? arr.join(', ') : '(none)'; };
+        return 'Section ' + sectionNum + (label ? ' — ' + label : '') + '\n\n' +
+            'Whole section (' + whole.length + '):\n  ' + fmt(whole) + '\n\n' +
+            'First half (' + first.length + '):\n  ' + fmt(first) + '\n\n' +
+            'Second half (' + second.length + '):\n  ' + fmt(second);
+    }
+
+    function handleShowRosterClick(event) {
+        var link = event.currentTarget;
+        alert(formatSectionRoster(link.dataset.section, link.dataset.label));
     }
 
     async function handleDirectJoinClick(event) {
@@ -682,12 +714,16 @@
         // create calendar and add timeslots to it
         var calendar = await createCalendar(days, startHour, endHour, startMinute, endMinute, false);
 
-        // disable all buttons and set their innerHTML to "&nbsp;"
+        // freeze the grid and set its buttons' innerHTML to "&nbsp;".
+        // use pointer-events instead of the native disabled attribute: section-cards
+        // (with their interactive join buttons/links) get appended inside these very
+        // buttons below, and a native `disabled` ancestor suppresses interactivity for
+        // its whole subtree, which pointer-events lets us override on the card itself.
         var buttons = Array.from(calendar.querySelectorAll('button'));
         buttons.forEach(function(button) {
             button.innerHTML = "&nbsp;";
             button.style['align-items'] = 'center';
-            button.setAttribute('disabled', 'true');
+            button.style.pointerEvents = 'none';
         });
 
         // calculate minimum height for each section-card
@@ -698,6 +734,7 @@
             timeslot.sectionNum = k;
             timeslot.day = timeslot[0];
             timeslot.timeRange = timeslot[1];
+            timeslot.capacity = timeslot[2];
             var tbody = calendar.querySelector('tbody');
             var dayIndex = days.indexOf(timeslot.day);
             var timeRange = timeslot.timeRange.split(' to ');
@@ -718,7 +755,8 @@
             overlay.innerHTML = '<p>Section ' + timeslot.sectionNum + '<br>' + timeslot.timeRange + '</p>';
 
             if (window.scheduleMode === 'direct') {
-                buildDirectSectionCard(overlay, timeslot.sectionNum, timeslot.capacity, null, {}, true, true);
+                // buildDirectSectionCard is deferred until after the overlay is attached below -
+                // it looks its own elements back up by id/selector, which fails silently on detached nodes
             } else {
             // add preferences
             const parser = new DOMParser();
@@ -759,6 +797,10 @@
             startButton.innerHTML = "&nbsp;";
             startButton.style['align-items'] = 'flex-start';
             startButton.appendChild(overlay);
+
+            if (window.scheduleMode === 'direct') {
+                buildDirectSectionCard(overlay, timeslot.sectionNum, timeslot.capacity, null, {}, true, true, timeslot.day + ' ' + timeslot.timeRange);
+            }
         });
 
         if (window.scheduleMode === 'direct') {
@@ -1063,8 +1105,8 @@
                     overlay.style.height = ((endHour - startHour) * 2 + (endMinute - startMinute) / 30) * (startButton.parentNode.clientHeight/2) + 'px';
                     overlay.innerHTML = '<p>Section ' + timeslot.sectionNum + '<br>' + timeslot.timeRange + '</p>';
                     if (data.mode === 'direct') {
-                        var occ = data.occupancy && data.occupancy[sectionNum];
-                        buildDirectSectionCard(overlay, sectionNum, timeslot.capacity, occ, timeslot.signups || {}, (data.is_admin || data.is_editable), data.is_admin);
+                        // buildDirectSectionCard is deferred until after the overlay is attached below -
+                        // it looks its own elements back up by id/selector, which fails silently on detached nodes
                     } else {
                     // add preferences
                     const parser = new DOMParser();
@@ -1102,8 +1144,13 @@
                     startButton.innerHTML = "&nbsp;";
                     startButton.style['align-items'] = 'flex-start';
                     startButton.appendChild(overlay);
+
+                    if (data.mode === 'direct') {
+                        var occ = data.occupancy && data.occupancy[sectionNum];
+                        buildDirectSectionCard(overlay, sectionNum, timeslot.capacity, occ, timeslot.signups || {}, (data.is_admin || data.is_editable), data.is_admin, timeslot.day + ' ' + timeslot.timeRange);
+                    }
                 });
-                
+
                 // add a button to return to the overlay
                 // insert before calendar
                 if (!document.getElementById('leaveschedulebtn')) {
